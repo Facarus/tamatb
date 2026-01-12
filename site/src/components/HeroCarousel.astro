@@ -1,0 +1,120 @@
+---
+interface Props {
+  images?: string[]
+}
+
+const { images = [
+  '/images/hero-1.jpg',
+  '/images/hero-2.jpg',
+  '/images/hero-3.jpg',
+  '/images/hero-4.jpg',
+  '/images/hero-5.jpg',
+] } = Astro.props
+---
+
+<section class="relative h-[80vh] min-h-[500px] overflow-hidden bg-gray-100">
+  <!-- Carousel Container -->
+  <div id="carousel" class="relative h-full">
+    {images.map((image, index) => (
+      <div
+        class={`carousel-slide absolute inset-0 transition-opacity duration-1000 ${index === 0 ? 'opacity-100' : 'opacity-0'}`}
+        data-index={index}
+      >
+        <!-- Image with grayscale to color effect -->
+        <div class="relative h-full w-full">
+          <!-- Grayscale layer (visible initially) -->
+          <div
+            class="carousel-grayscale absolute inset-0 bg-cover bg-center grayscale transition-opacity duration-1000"
+            style={`background-image: url('${image}')`}
+          ></div>
+          <!-- Color layer (fades in) -->
+          <div
+            class="carousel-color absolute inset-0 bg-cover bg-center opacity-0 transition-opacity duration-1000"
+            style={`background-image: url('${image}')`}
+          ></div>
+        </div>
+
+        <!-- Placeholder for missing images -->
+        <div class="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center -z-10">
+          <span class="text-gray-400 text-lg">Image {index + 1}</span>
+        </div>
+      </div>
+    ))}
+  </div>
+
+  <!-- Overlay gradient -->
+  <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white/30 pointer-events-none"></div>
+
+  <!-- Navigation dots -->
+  <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-3">
+    {images.map((_, index) => (
+      <button
+        class={`carousel-dot w-2 h-2 rounded-full transition-all duration-300 ${index === 0 ? 'bg-gray-900 w-8' : 'bg-gray-400'}`}
+        data-index={index}
+        aria-label={`Go to slide ${index + 1}`}
+      ></button>
+    ))}
+  </div>
+</section>
+
+<script>
+  const slides = document.querySelectorAll('.carousel-slide')
+  const dots = document.querySelectorAll('.carousel-dot')
+  let currentIndex = 0
+  let colorTimeout: ReturnType<typeof setTimeout>
+
+  function showSlide(index: number) {
+    // Clear any pending color transition
+    clearTimeout(colorTimeout)
+
+    // Hide all slides
+    slides.forEach((slide, i) => {
+      const grayscale = slide.querySelector('.carousel-grayscale') as HTMLElement
+      const color = slide.querySelector('.carousel-color') as HTMLElement
+
+      if (i === index) {
+        slide.classList.remove('opacity-0')
+        slide.classList.add('opacity-100')
+
+        // Reset to grayscale
+        if (grayscale) grayscale.classList.remove('opacity-0')
+        if (color) color.classList.add('opacity-0')
+
+        // Fade to color after delay
+        colorTimeout = setTimeout(() => {
+          if (grayscale) grayscale.classList.add('opacity-0')
+          if (color) color.classList.remove('opacity-0')
+        }, 800)
+      } else {
+        slide.classList.add('opacity-0')
+        slide.classList.remove('opacity-100')
+      }
+    })
+
+    // Update dots
+    dots.forEach((dot, i) => {
+      if (i === index) {
+        dot.classList.remove('bg-gray-400')
+        dot.classList.add('bg-gray-900', 'w-8')
+      } else {
+        dot.classList.add('bg-gray-400')
+        dot.classList.remove('bg-gray-900', 'w-8')
+      }
+    })
+
+    currentIndex = index
+  }
+
+  // Auto-advance
+  setInterval(() => {
+    showSlide((currentIndex + 1) % slides.length)
+  }, 5000)
+
+  // Click handlers for dots
+  dots.forEach((dot) => {
+    dot.addEventListener('click', () => {
+      const index = parseInt(dot.getAttribute('data-index') || '0')
+      showSlide(index)
+    })
+  })
+</script>

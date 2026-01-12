@@ -1,0 +1,54 @@
+---
+import Layout from '../layouts/Layout.astro'
+---
+
+<Layout title="Studio" description="About TAM ATB Architecture studio">
+  <section class="py-12 px-6">
+    <div class="container mx-auto">
+      <h1 class="text-4xl font-light tracking-wide text-gray-900 mb-4">Studio</h1>
+
+      <div class="grid lg:grid-cols-2 gap-16 mt-12">
+        <!-- About Text -->
+        <div>
+          <h2 class="text-2xl font-light text-gray-900 mb-6">About Us</h2>
+          <div class="space-y-4 text-gray-600 leading-relaxed">
+            <p>
+              TAM ATB Architecture is a design studio based in Marbella, Spain,
+              dedicated to creating innovative and sustainable architectural solutions.
+            </p>
+            <p>
+              With decades of experience in residential and commercial projects,
+              our team brings together creativity, technical expertise, and a deep
+              understanding of the Mediterranean context.
+            </p>
+            <p>
+              Our philosophy centers on creating spaces that harmonize with their
+              environment while meeting the unique needs of each client.
+            </p>
+          </div>
+        </div>
+
+        <!-- Studio Image -->
+        <div class="aspect-[4/3] bg-gray-200 flex items-center justify-center">
+          <span class="text-gray-400">Studio Image</span>
+        </div>
+      </div>
+
+      <!-- Team Section -->
+      <div class="mt-20">
+        <h2 class="text-2xl font-light text-gray-900 mb-12">Our Team</h2>
+        <div class="grid md:grid-cols-3 gap-8">
+          {[1, 2, 3].map((i) => (
+            <div class="text-center">
+              <div class="w-32 h-32 rounded-full bg-gray-200 mx-auto mb-4 flex items-center justify-center">
+                <span class="text-gray-400 text-xs">Photo</span>
+              </div>
+              <h3 class="text-lg font-light text-gray-900">Team Member {i}</h3>
+              <p class="text-sm text-gray-500">Position</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>

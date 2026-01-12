@@ -1,0 +1,10 @@
+version: '1.0'
+name: TAM ATB Architecture
+description: Architecture firm website - Astro + Tailwind
+beads:
+  default_enabled: false
+subjects: {}
+auto_detect:
+  enabled: true
+  method: path_match
+project_id: 2e4f5722-cfd3-4c79-b317-94e7d1713b17

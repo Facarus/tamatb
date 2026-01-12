@@ -1,0 +1,111 @@
+---
+import Layout from '../layouts/Layout.astro'
+---
+
+<Layout title="Contact" description="Get in touch with TAM ATB Architecture">
+  <section class="py-12 px-6">
+    <div class="container mx-auto">
+      <h1 class="text-4xl font-light tracking-wide text-gray-900 mb-4">Contact</h1>
+      <p class="text-gray-600 mb-12 max-w-2xl">
+        We'd love to hear from you. Get in touch to discuss your project or learn more about our services.
+      </p>
+
+      <div class="grid lg:grid-cols-2 gap-16">
+        <!-- Contact Form -->
+        <div>
+          <h2 class="text-2xl font-light text-gray-900 mb-6">Send us a message</h2>
+          <form class="space-y-6" action="#" method="POST">
+            <div class="grid md:grid-cols-2 gap-6">
+              <div>
+                <label for="name" class="block text-sm text-gray-600 mb-2">Name</label>
+                <input type="text" id="name" name="name" required />
+              </div>
+              <div>
+                <label for="email" class="block text-sm text-gray-600 mb-2">Email</label>
+                <input type="email" id="email" name="email" required />
+              </div>
+            </div>
+            <div>
+              <label for="phone" class="block text-sm text-gray-600 mb-2">Phone (optional)</label>
+              <input type="tel" id="phone" name="phone" />
+            </div>
+            <div>
+              <label for="subject" class="block text-sm text-gray-600 mb-2">Subject</label>
+              <input type="text" id="subject" name="subject" required />
+            </div>
+            <div>
+              <label for="message" class="block text-sm text-gray-600 mb-2">Message</label>
+              <textarea id="message" name="message" rows="5" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">
+              Send Message
+            </button>
+          </form>
+        </div>
+
+        <!-- Contact Info & Map -->
+        <div>
+          <h2 class="text-2xl font-light text-gray-900 mb-6">Contact Information</h2>
+
+          <div class="space-y-6 mb-8">
+            <div>
+              <h3 class="text-sm font-medium text-gray-900 mb-1">Email</h3>
+              <p class="text-gray-600">
+                <a href="mailto:info@tamatb.com" class="hover:text-gray-900 transition-colors">
+                  info@tamatb.com
+                </a>
+              </p>
+              <p class="text-gray-600">
+                <a href="mailto:administracion@marbellarchitecture.com" class="hover:text-gray-900 transition-colors">
+                  administracion@marbellarchitecture.com
+                </a>
+              </p>
+            </div>
+
+            <div>
+              <h3 class="text-sm font-medium text-gray-900 mb-1">Phone</h3>
+              <p class="text-gray-600">
+                <a href="tel:+34952810700" class="hover:text-gray-900 transition-colors">
+                  (+34) 952 81 07 00
+                </a>
+              </p>
+            </div>
+
+            <div>
+              <h3 class="text-sm font-medium text-gray-900 mb-1">Address</h3>
+              <address class="not-italic text-gray-600 leading-relaxed">
+                Avda. del Prado esq. C/Londres<br />
+                Urb. Miragolf. Fase III. 33 - 35<br />
+                29660, Nueva Andalucía, Marbella
+              </address>
+            </div>
+          </div>
+
+          <!-- Google Maps Embed -->
+          <div class="aspect-video bg-gray-200 rounded overflow-hidden">
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3223.1!2d-4.95!3d36.48!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzbCsDI4JzQ4LjAiTiA0wrA1NycwMC4wIlc!5e0!3m2!1sen!2ses!4v1600000000000!5m2!1sen!2ses"
+              width="100%"
+              height="100%"
+              style="border:0;"
+              allowfullscreen=""
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+              title="TAM ATB Architecture Location"
+            ></iframe>
+          </div>
+          <p class="text-sm text-gray-500 mt-2">
+            <a
+              href="https://maps.google.com/?q=Avda+del+Prado+esq+C/Londres+Urb+Miragolf+29660+Nueva+Andalucia+Marbella"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="hover:text-gray-900 transition-colors"
+            >
+              Open in Google Maps →
+            </a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>

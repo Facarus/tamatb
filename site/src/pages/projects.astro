@@ -1,0 +1,31 @@
+---
+import Layout from '../layouts/Layout.astro'
+---
+
+<Layout title="Projects" description="Explore our portfolio of architectural projects">
+  <section class="py-12 px-6">
+    <div class="container mx-auto">
+      <h1 class="text-4xl font-light tracking-wide text-gray-900 mb-4">Projects</h1>
+      <p class="text-gray-600 mb-12 max-w-2xl">
+        A selection of our architectural work spanning residential, commercial, and public spaces.
+      </p>
+
+      <!-- Projects Grid -->
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {[1, 2, 3, 4, 5, 6].map((i) => (
+          <a href={`/projects/${i}`} class="group">
+            <div class="aspect-[4/3] bg-gray-200 overflow-hidden">
+              <div class="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 group-hover:scale-105 transition-transform duration-500 flex items-center justify-center">
+                <span class="text-gray-400">Project Image {i}</span>
+              </div>
+            </div>
+            <h3 class="mt-4 text-lg font-light text-gray-900 group-hover:text-gray-600 transition-colors">
+              Project Title {i}
+            </h3>
+            <p class="text-sm text-gray-500">Location • Year</p>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+</Layout>

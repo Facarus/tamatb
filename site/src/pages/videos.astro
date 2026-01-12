@@ -1,0 +1,38 @@
+---
+import Layout from '../layouts/Layout.astro'
+---
+
+<Layout title="Videos" description="Video presentations and project walkthroughs">
+  <section class="py-12 px-6">
+    <div class="container mx-auto">
+      <h1 class="text-4xl font-light tracking-wide text-gray-900 mb-4">Videos</h1>
+      <p class="text-gray-600 mb-12 max-w-2xl">
+        Explore our projects through video presentations, 3D walkthroughs,
+        and behind-the-scenes looks at our design process.
+      </p>
+
+      <!-- Video Grid -->
+      <div class="grid md:grid-cols-2 gap-8">
+        {[1, 2, 3, 4].map((i) => (
+          <div class="group cursor-pointer">
+            <div class="aspect-video bg-gray-200 relative overflow-hidden">
+              <div class="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                <span class="text-gray-400">Video Thumbnail {i}</span>
+              </div>
+              <!-- Play Button Overlay -->
+              <div class="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/30 transition-colors">
+                <div class="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all">
+                  <svg class="w-6 h-6 text-gray-900 ml-1" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <h3 class="mt-4 text-lg font-light text-gray-900">Video Title {i}</h3>
+            <p class="text-sm text-gray-500">Project overview • 3:45</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+</Layout>
