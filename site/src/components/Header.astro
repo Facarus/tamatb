@@ -7,6 +7,14 @@ const menuItems = [
   { name: 'Videos', href: '/videos' },
   { name: 'Contact', href: '/contact' },
 ]
+
+const languages = [
+  { code: 'ES', name: 'Español', href: '/' },
+  { code: 'EN', name: 'English', href: '/en' },
+  { code: 'DE', name: 'Deutsch', href: '/de' },
+]
+
+const currentLang = 'ES'
 ---
 
 <header class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100">
@@ -15,7 +23,7 @@ const menuItems = [
       <!-- Logo & Slogan -->
       <a href="/" class="flex items-center gap-4">
         <!-- Logo Placeholder -->
-        <div class="w-12 h-12 bg-gray-200 flex items-center justify-center text-gray-500 text-xs font-medium">
+        <div class="w-12 h-12 bg-gray-200 flex items-center justify-center text-gray-500 text-xs font-medium border border-gray-300">
           LOGO
         </div>
         <div class="hidden sm:block">
@@ -34,24 +42,61 @@ const menuItems = [
             {item.name}
           </a>
         ))}
+
+        <!-- Language Selector (Desktop) -->
+        <div class="flex items-center gap-2 ml-4 pl-4 border-l border-gray-200">
+          {languages.map((lang) => (
+            <a
+              href={lang.href}
+              class={`text-xs font-medium tracking-wide transition-colors ${
+                lang.code === currentLang
+                  ? 'text-gray-900'
+                  : 'text-gray-400 hover:text-gray-600'
+              }`}
+              title={lang.name}
+            >
+              {lang.code}
+            </a>
+          ))}
+        </div>
       </nav>
 
-      <!-- Hamburger Menu Button -->
-      <button
-        id="menu-toggle"
-        class="lg:hidden p-2 -mr-2"
-        aria-label="Toggle menu"
-      >
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            id="menu-icon"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="1.5"
-            d="M4 6h16M4 12h16M4 18h16"
-          />
-        </svg>
-      </button>
+      <!-- Language + Hamburger Menu Button -->
+      <div class="lg:hidden flex items-center gap-4">
+        <!-- Language Selector (Mobile - compact) -->
+        <div class="flex items-center gap-1">
+          {languages.map((lang) => (
+            <a
+              href={lang.href}
+              class={`text-xs font-medium tracking-wide transition-colors px-1 ${
+                lang.code === currentLang
+                  ? 'text-gray-900'
+                  : 'text-gray-400 hover:text-gray-600'
+              }`}
+              title={lang.name}
+            >
+              {lang.code}
+            </a>
+          ))}
+        </div>
+
+        <!-- Hamburger -->
+        <button
+          id="menu-toggle"
+          class="p-2 -mr-2"
+          aria-label="Toggle menu"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              id="menu-icon"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.5"
+              d="M4 6h16M4 12h16M4 18h16"
+            />
+          </svg>
+        </button>
+      </div>
     </div>
   </div>
 
