@@ -1,0 +1,55 @@
+---
+import Layout from '../../layouts/Layout.astro'
+import HeroCarousel from '../../components/HeroCarousel.astro'
+import { projects } from '../../data/projects'
+import { useTranslations, getLocalizedPath } from '../../i18n/utils'
+
+const locale = 'es'
+const t = useTranslations(locale)
+const featuredProjects = projects.filter(p => p.featured).slice(0, 3)
+---
+
+<Layout title="Inicio" locale={locale}>
+  <HeroCarousel />
+
+  <section class="py-20 px-6">
+    <div class="container mx-auto max-w-3xl text-center">
+      <h2 class="text-3xl font-light tracking-wide text-gray-900 mb-6">
+        {t.home.title}
+      </h2>
+      <p class="text-gray-600 leading-relaxed">
+        {t.home.subtitle}
+      </p>
+    </div>
+  </section>
+
+  <section class="py-20 px-6 bg-gray-50">
+    <div class="container mx-auto">
+      <h3 class="text-2xl font-light tracking-wide text-gray-900 mb-12 text-center">
+        {t.home.featuredProjects}
+      </h3>
+      <div class="grid md:grid-cols-3 gap-8">
+        {featuredProjects.map((project) => (
+          <a href={getLocalizedPath(`/projects/${project.id}`, locale)} class="group">
+            <div class="aspect-[4/3] bg-gray-200 overflow-hidden">
+              <img
+                src={project.image}
+                alt={project.title}
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              />
+            </div>
+            <h4 class="mt-4 text-lg font-light text-gray-900 group-hover:text-gray-600 transition-colors">
+              {project.title}
+            </h4>
+            <p class="text-sm text-gray-500">{project.location} • {project.year}</p>
+          </a>
+        ))}
+      </div>
+      <div class="text-center mt-12">
+        <a href={getLocalizedPath('/projects', locale)} class="inline-flex items-center px-6 py-3 border border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white transition-colors text-sm tracking-wide">
+          {t.home.viewAllProjects}
+        </a>
+      </div>
+    </div>
+  </section>
+</Layout>

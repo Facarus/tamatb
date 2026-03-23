@@ -1,0 +1,24 @@
+---
+import { useTranslations, getLocalizedPath, type Locale } from '../../i18n/utils'
+
+interface Props {
+  locale?: Locale
+}
+
+const { locale = 'en' } = Astro.props
+const t = useTranslations(locale)
+---
+
+<nav class="nav-overlay" id="navOverlay">
+  <a href={getLocalizedPath('/', locale)} class="logo">
+    <img src="/images/logo/logo-white.png" alt="TAM ATB Architecture" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+    <span class="logo-text" style="display:none">TAM ATB</span>
+  </a>
+  <div class="nav-menu">
+    <a href={getLocalizedPath('/studio', locale)}>{t.nav.studio}</a>
+    <a href={getLocalizedPath('/present', locale)}>{t.nav.present}</a>
+    <a href={getLocalizedPath('/projects', locale)}>{t.kinetic.built}</a>
+    <a href={getLocalizedPath('/videos', locale)}>{t.nav.videos}</a>
+    <a href={getLocalizedPath('/contact', locale)}>{t.nav.contact}</a>
+  </div>
+</nav>

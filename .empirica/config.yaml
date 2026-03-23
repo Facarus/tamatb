@@ -1,5 +1,5 @@
 version: '2.0'
-root: /home/yogapad/tamatb/.empirica
+root: /mnt/f/Users/AI work/tamatb/.empirica
 paths:
   sessions: sessions/sessions.db
   identity: identity/

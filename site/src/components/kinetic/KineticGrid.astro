@@ -1,0 +1,30 @@
+---
+import KineticTile from './KineticTile.astro'
+import type { Project } from '../../data/projects'
+
+interface Props {
+  projects: Project[]
+  columns: string[][]
+  speeds: number[]
+  directions: ('down' | 'up')[]
+}
+
+const { projects, columns, speeds, directions } = Astro.props
+
+function getProject(id: string): Project | undefined {
+  return projects.find(p => p.id === id)
+}
+---
+
+<div class="kinetic-grid" id="kineticGrid">
+  {columns.map((colIds, i) => (
+    <div class={`column col-${directions[i]}`} data-col-index={i}>
+      <div class="column-inner" data-direction={directions[i]} data-speed={speeds[i]}>
+        {colIds.map(id => {
+          const project = getProject(id)
+          return project ? <KineticTile project={project} direction={directions[i]} /> : null
+        })}
+      </div>
+    </div>
+  ))}
+</div>

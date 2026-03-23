@@ -1,49 +1,40 @@
 ---
-import Layout from '../layouts/Layout.astro'
-import HeroCarousel from '../components/HeroCarousel.astro'
+import KineticLayout from '../layouts/KineticLayout.astro'
+import KineticGrid from '../components/kinetic/KineticGrid.astro'
+import KineticNav from '../components/kinetic/KineticNav.astro'
+import KineticLightbox from '../components/kinetic/KineticLightbox.astro'
+import Vignette from '../components/kinetic/Vignette.astro'
+import { projects, gridColumns, columnSpeeds, columnDirections, projectOrder, buildClientProjectDB } from '../data/projects'
+
+const locale = 'en'
+const clientData = JSON.stringify({
+  projectDB: buildClientProjectDB(),
+  projectOrder,
+})
 ---
 
-<Layout title="Home">
-  <HeroCarousel />
+<KineticLayout title="Home" locale={locale}>
+  <KineticNav locale={locale} />
+  <Vignette />
+  <KineticGrid
+    projects={projects}
+    columns={gridColumns}
+    speeds={columnSpeeds}
+    directions={columnDirections}
+  />
+  <KineticLightbox />
 
-  <!-- Introduction Section -->
-  <section class="py-20 px-6">
-    <div class="container mx-auto max-w-3xl text-center">
-      <h2 class="text-3xl font-light tracking-wide text-gray-900 mb-6">
-        Architecture with Vision
-      </h2>
-      <p class="text-gray-600 leading-relaxed">
-        TAM ATB Architecture brings innovative design solutions to Marbella and beyond.
-        With a focus on contemporary aesthetics and sustainable practices, we create
-        spaces that inspire and endure.
-      </p>
-    </div>
-  </section>
+  <script type="application/json" id="project-data" set:html={clientData} />
 
-  <!-- Featured Projects Preview -->
-  <section class="py-20 px-6 bg-gray-50">
-    <div class="container mx-auto">
-      <h3 class="text-2xl font-light tracking-wide text-gray-900 mb-12 text-center">
-        Featured Projects
-      </h3>
-      <div class="grid md:grid-cols-3 gap-8">
-        {[1, 2, 3].map((i) => (
-          <a href="/projects" class="group">
-            <div class="aspect-[4/3] bg-gray-200 overflow-hidden">
-              <div class="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 group-hover:scale-105 transition-transform duration-500 flex items-center justify-center">
-                <span class="text-gray-400">Project {i}</span>
-              </div>
-            </div>
-            <h4 class="mt-4 text-lg font-light text-gray-900">Project Title {i}</h4>
-            <p class="text-sm text-gray-500">Marbella, Spain</p>
-          </a>
-        ))}
-      </div>
-      <div class="text-center mt-12">
-        <a href="/projects" class="btn btn-outline">
-          View All Projects
-        </a>
-      </div>
-    </div>
-  </section>
-</Layout>
+  <script>
+    import { initKineticGrid } from '../scripts/kinetic-engine'
+    import { initLightbox } from '../scripts/lightbox'
+
+    const dataEl = document.getElementById('project-data')
+    if (dataEl) {
+      const { projectDB, projectOrder } = JSON.parse(dataEl.textContent || '{}')
+      initKineticGrid()
+      initLightbox(projectDB, projectOrder)
+    }
+  </script>
+</KineticLayout>

@@ -1,0 +1,37 @@
+---
+import Layout from '../../../layouts/Layout.astro'
+import { projects } from '../../../data/projects'
+import { useTranslations, getLocalizedPath } from '../../../i18n/utils'
+
+const locale = 'zh'
+const t = useTranslations(locale)
+---
+
+<Layout title={t.projects.title} locale={locale} description={t.projects.subtitle}>
+  <section class="py-12 px-6">
+    <div class="container mx-auto">
+      <h1 class="text-4xl font-light tracking-wide text-gray-900 mb-4">{t.projects.title}</h1>
+      <p class="text-gray-600 mb-12 max-w-2xl">
+        {t.projects.subtitle}
+      </p>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {projects.map((project) => (
+          <a href={getLocalizedPath(`/projects/${project.id}`, locale)} class="group">
+            <div class="aspect-[4/3] bg-gray-200 overflow-hidden">
+              <img
+                src={project.image}
+                alt={project.title}
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              />
+            </div>
+            <h3 class="mt-4 text-lg font-light text-gray-900 group-hover:text-gray-600 transition-colors">
+              {project.title}
+            </h3>
+            <p class="text-sm text-gray-500">{project.location} • {project.year}</p>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+</Layout>

@@ -1,0 +1,1312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TAM ATB - Kinetic Home Prototype</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0a0a0a;
+      color: white;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    /* ===== KINETIC GRID ===== */
+    .kinetic-grid {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      gap: 5px;
+      padding: 0;
+      z-index: 1;
+      transition: filter 0.6s ease;
+    }
+
+    .kinetic-grid.dimmed {
+      filter: brightness(0.3) blur(2px);
+    }
+
+    .column {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .column-inner {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      will-change: transform;
+    }
+
+    /* ===== TILES ===== */
+    .tile {
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+      width: 100%;
+      z-index: 2;
+      cursor: pointer;
+    }
+
+    .tile img {
+      width: 100%;
+      height: auto;
+      display: block;
+      filter: grayscale(100%) contrast(1.05) brightness(0.85);
+      transition: filter 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                  transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      pointer-events: none;
+    }
+
+    .tile:hover img {
+      filter: grayscale(0%) contrast(1) brightness(1);
+      transform: scale(1.04);
+    }
+
+    .tile-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        180deg,
+        rgba(0,0,0,0.1) 0%,
+        transparent 40%,
+        transparent 60%,
+        rgba(0,0,0,0.2) 100%
+      );
+      pointer-events: none;
+      z-index: 3;
+      transition: opacity 0.6s ease;
+    }
+
+    .tile:hover .tile-overlay {
+      opacity: 0.2;
+    }
+
+    /* ===== TILE INFO — label pinned by JS, meta floats nearby ===== */
+    .tile-info {
+      position: absolute;
+      left: 0;
+      right: 0;
+      pointer-events: none;
+      z-index: 5;
+      /* top is set by JS */
+      top: 10px;
+    }
+
+    /* Semi-transparent backdrop — 1/3 solid, 1/3 gradient, 1/3 clear */
+    /* Sized by JS to cover both label + meta */
+    .tile-info-bg {
+      position: absolute;
+      left: -4px;
+      right: 0;
+      border-radius: 3px 0 0 3px;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+      z-index: -1;
+      /* 33% solid → 33% gradient → 33% clear */
+      background: linear-gradient(
+        to right,
+        rgba(80, 80, 80, 0.55) 0%,
+        rgba(80, 80, 80, 0.55) 33%,
+        rgba(80, 80, 80, 0) 66%,
+        transparent 100%
+      );
+      /* top/bottom set by JS to cover label + meta */
+      top: -4px;
+      bottom: -4px;
+    }
+
+    /* Extend bg to cover meta area */
+    .col-up .tile-info-bg {
+      /* meta is below label, so extend downward */
+      bottom: -60px;
+    }
+    .col-down .tile-info-bg {
+      /* meta is above label, so extend upward */
+      top: -60px;
+    }
+
+    .tile:hover .tile-info-bg {
+      opacity: 1;
+    }
+
+    .tile .label {
+      font-size: 10px;
+      font-weight: 400;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: white;
+      opacity: 0.6;
+      transition: opacity 0.4s ease;
+      text-shadow: 0 1px 6px rgba(0,0,0,0.95), 0 0 20px rgba(0,0,0,0.6);
+      padding: 0 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .tile:hover .label {
+      opacity: 1;
+    }
+
+    /* Meta: absolutely positioned relative to tile-info */
+    .tile .meta {
+      position: absolute;
+      left: 0;
+      right: 0;
+      padding: 0 12px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+
+    /* Ascending columns: meta BELOW label */
+    .col-up .tile .meta {
+      top: 100%;
+      margin-top: 2px;
+    }
+
+    /* Descending columns: meta ABOVE label */
+    .col-down .tile .meta {
+      bottom: 100%;
+      margin-bottom: 2px;
+    }
+
+    .tile:hover .meta {
+      opacity: 1;
+    }
+
+    .meta-line {
+      font-size: 8px;
+      font-weight: 300;
+      letter-spacing: 1px;
+      color: rgba(255,255,255,0.9);
+      text-shadow: 0 1px 4px rgba(0,0,0,0.9);
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+      line-height: 1.7;
+    }
+
+    .tile:hover .meta-line:nth-child(1) { opacity: 1; transform: translateY(0); transition-delay: 0.15s; }
+    .tile:hover .meta-line:nth-child(2) { opacity: 1; transform: translateY(0); transition-delay: 0.3s; }
+    .tile:hover .meta-line:nth-child(3) { opacity: 1; transform: translateY(0); transition-delay: 0.45s; }
+    .tile:hover .meta-line:nth-child(4) { opacity: 1; transform: translateY(0); transition-delay: 0.6s; }
+
+    /* ===== NAVIGATION ===== */
+    .nav-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 200;
+      padding: 30px 40px;
+      transition: opacity 0.4s ease;
+    }
+
+    .nav-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .logo {
+      display: block;
+      margin-bottom: 36px;
+    }
+
+    .logo img {
+      height: 110px;
+      width: auto;
+      transition: opacity 0.3s ease, filter 0.3s ease;
+    }
+
+    .logo:hover img {
+      filter: drop-shadow(0 0 12px rgba(255,255,255,0.4));
+    }
+
+    .logo-text {
+      display: none;
+      font-size: 22px;
+      font-weight: 300;
+      letter-spacing: 6px;
+      color: white;
+      text-decoration: none;
+    }
+
+    .nav-menu {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .nav-menu a {
+      color: white;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 300;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      opacity: 0.8;
+      transition: opacity 0.3s ease, transform 0.3s ease, letter-spacing 0.4s ease;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.9);
+    }
+
+    .nav-menu a:hover {
+      opacity: 1;
+      transform: translateX(6px);
+      letter-spacing: 4px;
+    }
+
+    /* ===== VIGNETTE ===== */
+    .vignette {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 100;
+      background:
+        linear-gradient(to right, rgba(0,0,0,0.55) 0%, transparent 22%, transparent 78%, rgba(0,0,0,0.25) 100%),
+        linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, transparent 18%, transparent 82%, rgba(0,0,0,0.25) 100%);
+      transition: opacity 0.4s ease;
+    }
+
+    .vignette.hidden { opacity: 0; }
+
+    /* ============================================
+       LIGHTBOX — Architectural Unfold
+       ============================================ */
+    .lightbox-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0);
+      z-index: 500;
+      display: none;
+      transition: background 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .lightbox-backdrop.active {
+      display: block;
+      background: rgba(0,0,0,0.75);
+    }
+
+    .lightbox-stage {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 510;
+      perspective: 1200px;
+    }
+
+    .lightbox-stage.active {
+      display: flex;
+    }
+
+    .lightbox-panel {
+      position: relative;
+      width: 80vw;
+      max-height: 85vh;
+      transform-style: preserve-3d;
+      transform: rotateY(90deg) scale(0.3);
+      opacity: 0;
+      transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+                  opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .lightbox-panel.open {
+      transform: rotateY(0deg) scale(1);
+      opacity: 1;
+    }
+
+    /* Default close: fold left (like closing a book) */
+    .lightbox-panel.closing {
+      transform: rotateY(-90deg) scale(0.3);
+      opacity: 0;
+      transition: transform 0.5s cubic-bezier(0.55, 0, 1, 0.45),
+                  opacity 0.4s cubic-bezier(0.55, 0, 1, 0.45);
+    }
+
+    /* Page-turn: next project folds LEFT, opens from RIGHT */
+    .lightbox-panel.close-left {
+      transform-origin: left center;
+      transform: rotateY(-90deg) scale(0.95);
+      opacity: 0;
+      transition: transform 0.45s cubic-bezier(0.55, 0, 1, 0.45),
+                  opacity 0.35s cubic-bezier(0.55, 0, 1, 0.45);
+    }
+    .lightbox-panel.open-from-right {
+      transform-origin: right center;
+      transform: rotateY(0deg) scale(1);
+      opacity: 1;
+    }
+
+    /* Page-turn: prev project folds RIGHT, opens from LEFT */
+    .lightbox-panel.close-right {
+      transform-origin: right center;
+      transform: rotateY(90deg) scale(0.95);
+      opacity: 0;
+      transition: transform 0.45s cubic-bezier(0.55, 0, 1, 0.45),
+                  opacity 0.35s cubic-bezier(0.55, 0, 1, 0.45);
+    }
+    .lightbox-panel.open-from-left {
+      transform-origin: left center;
+      transform: rotateY(0deg) scale(1);
+      opacity: 1;
+    }
+
+    .lightbox-image {
+      width: 100%;
+      max-height: 85vh;
+      object-fit: contain;
+      display: block;
+      border-radius: 2px;
+      box-shadow: 0 30px 90px rgba(0,0,0,0.6), 0 0 1px rgba(255,255,255,0.1);
+    }
+
+    /* ===== LIGHTBOX CONTROLS ===== */
+    .lb-btn {
+      position: absolute;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: white;
+      cursor: pointer;
+      font-family: 'Montserrat', sans-serif;
+      transition: background 0.25s ease, border-color 0.25s ease;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 520;
+    }
+
+    .lb-btn:hover {
+      background: rgba(255,255,255,0.15);
+      border-color: rgba(255,255,255,0.35);
+    }
+
+    .lb-close {
+      top: -52px;
+      right: 0;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 200;
+    }
+
+    .lb-info-toggle {
+      top: -52px;
+      left: 0;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      font-size: 16px;
+      font-style: italic;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 400;
+      font-family: Georgia, serif;
+    }
+
+    .lb-info-toggle.active {
+      background: rgba(255,255,255,0.2);
+      border-color: rgba(255,255,255,0.5);
+    }
+
+    .lb-img-nav {
+      position: absolute;
+      bottom: -52px;
+      left: 0;
+      display: flex;
+      gap: 6px;
+      z-index: 520;
+    }
+
+    .lb-img-nav .lb-btn {
+      position: relative;
+      width: 44px;
+      height: 36px;
+      border-radius: 4px;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 300;
+    }
+
+    .lb-proj-nav {
+      position: absolute;
+      bottom: -52px;
+      right: 0;
+      display: flex;
+      gap: 6px;
+      z-index: 520;
+    }
+
+    .lb-proj-nav .lb-btn {
+      position: relative;
+      width: 44px;
+      height: 36px;
+      border-radius: 4px;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 300;
+    }
+
+    .lb-counter {
+      position: absolute;
+      bottom: -44px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 10px;
+      font-weight: 300;
+      letter-spacing: 2px;
+      color: rgba(255,255,255,0.6);
+      text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+      z-index: 520;
+    }
+
+    /* ===== INFO OVERLAY ===== */
+    .lb-info-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      border-radius: 2px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 10% 8%;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+      z-index: 515;
+    }
+
+    .lb-info-overlay.visible {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .lb-info-title {
+      font-size: 28px;
+      font-weight: 200;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .lb-info-meta {
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 1.5px;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 30px;
+      line-height: 1.8;
+    }
+
+    .lb-info-text {
+      font-size: 14px;
+      font-weight: 300;
+      line-height: 1.8;
+      color: rgba(255,255,255,0.85);
+      max-width: 600px;
+    }
+
+    .lb-info-text p { margin-bottom: 16px; }
+
+    /* ===== RESPONSIVE ===== */
+
+    /* Tablet: 3 columns */
+    @media (max-width: 1024px) {
+      .kinetic-grid { gap: 4px; }
+      .column-inner { gap: 4px; }
+      .column:nth-child(4) { display: none; }
+      .nav-overlay { padding: 24px 28px; }
+      .logo img { height: 80px; }
+      .nav-menu { gap: 12px; }
+      .nav-menu a { font-size: 12px; letter-spacing: 2px; }
+      .tile .label { font-size: 9px; }
+      .lightbox-panel { width: 90vw; }
+      .lb-info-title { font-size: 24px; }
+      .lb-info-text { font-size: 13px; }
+    }
+
+    /* Mobile: 2 columns */
+    @media (max-width: 640px) {
+      .kinetic-grid { gap: 3px; }
+      .column-inner { gap: 3px; }
+      .column:nth-child(3) { display: none; }
+      .column:nth-child(4) { display: none; }
+      .nav-overlay { padding: 16px 20px; }
+      .logo img { height: 60px; }
+      .nav-menu { gap: 10px; }
+      .nav-menu a { font-size: 11px; letter-spacing: 2px; }
+      .tile .label { font-size: 8px; letter-spacing: 1px; }
+      .meta-line { font-size: 7px; }
+      .lightbox-panel { width: 96vw; }
+      .lb-info-title { font-size: 18px; letter-spacing: 2px; }
+      .lb-info-text { font-size: 12px; }
+      .lb-close, .lb-info-toggle { width: 34px; height: 34px; top: -44px; }
+      .lb-img-nav, .lb-proj-nav { bottom: -44px; }
+      .lb-img-nav .lb-btn, .lb-proj-nav .lb-btn { width: 38px; height: 32px; font-size: 14px; }
+      .lb-counter { bottom: -38px; font-size: 9px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <div class="nav-overlay" id="navOverlay">
+    <a href="/" class="logo">
+      <img src="images/logo/logo-white.png" alt="TAM ATB"
+        onerror="this.style.display='none'; this.parentElement.querySelector('.logo-text').style.display='block';">
+      <span class="logo-text">TAM ATB</span>
+    </a>
+    <nav class="nav-menu">
+      <a href="/studio">Studio</a>
+      <a href="/present">Present</a>
+      <a href="/projects">Built</a>
+      <a href="/videos">Videos</a>
+      <a href="/contact">Contact</a>
+    </nav>
+  </div>
+
+  <!-- Vignette -->
+  <div class="vignette" id="vignette"></div>
+
+  <!-- Grid: 4 columns, 23 projects -->
+  <div class="kinetic-grid" id="kineticGrid">
+
+    <!-- COL 1 — DOWN -->
+    <div class="column col-down" data-col-index="0">
+      <div class="column-inner" data-direction="down" data-speed="0.92">
+        <div class="tile" data-project="addoha-hq"><img loading="lazy" src="images/main-upscaled/addoha-hq.jpg" alt="Addoha HQ"><div class="tile-overlay"></div><div class="tile-info"><div class="tile-info-bg"></div><span class="label">Addoha HQ</span><div class="meta"></div></div></div>
+        <div class="tile" data-project="estadio-plaza-de-marbella"><img loading="lazy" src="images/main-upscaled/estadio-plaza-de-marbella.jpg" alt="Estadio Plaza de Marbella"><div class="tile-overlay"></div><div class="tile-info"><div class="tile-info-bg"></div><span class="label">Estadio Plaza de Marbella</span><div class="meta"></div></div></div>
+        <div class="tile" data-project="an-dong-h-t"><img loading="lazy" src="images/main-upscaled/an-dong-h-t.jpg" alt="An Dong H.T."><div class="tile-overlay"></div><div class="tile-info"><div class="tile-info-bg"></div><span class="label">An Dong H.T.</span><div class="meta"></div></div></div>
+        <div class="tile" data-project="t-q-plaza"><img loading="lazy" src="images/main-upscaled/t-q-plaza.jpg" alt="T.Q. Plaza"><div class="tile-overlay"></div><div class="tile-info"><div class="tile-info-bg"></div><span class="label">T.Q. Plaza</span><div class="meta"></div></div></div>
+        <div class="tile" data-project="riyadh-apartments"><img loading="lazy" src="images/main-upscaled/riyadh-apartments.jpg" alt="Riyadh Apartments"><div class="tile-overlay"></div><div class="tile-info"><div class="tile-info-bg"></div><span class="label">Riyadh Apartments</span><div class="meta"></div></div></div>
+        <div class="tile" data-project="prestigia-hq"><img loading="lazy" src="images/main-upscaled/prestigia-hq.jpg" alt="Prestigia HQ"><div class="tile-overlay"></div><div class="tile-info"><div class="tile-info-bg"></div><span class="label">Prestigia HQ</span><div class="meta"></div></div></div>
+      </div>
+    </div>
+
+    <!-- COL 2 — UP -->
+    <div class="column col-up" data-col-index="1">
+      <div class="column-inner" data-direction="up" data-speed="1.05">
+        <div class="tile" data-project="citerion-house"><img loading="lazy" src="images/main-upscaled/citerion-house.jpg" alt="Citerion House"><div class="tile-overlay"></div><div class="tile-info"><div class="tile-info-bg"></div><span class="label">Citerion House</span><div class="meta"></div></div></div>
+        <div class="tile" data-project="oriental-landscape-hq"><img loading="lazy" src="images/main-upscaled/oriental-landscape-hq.jpg" alt="Oriental Landscape HQ"><div class="tile-overlay"></div><div class="tile-info"><div class="tile-info-bg"></div><span class="label">Oriental Landscape HQ</span><div class="meta"></div></div></div>
+        <div class="tile" data-project="shanghai-arch"><img loading="lazy" src="images/main-upscaled/shanghai-arch.jpg" alt="Shanghai Arch"><div class="tile-overlay"></div><div class="tile-info"><div class="tile-info-bg"></div><span class="label">Shanghai Arch</span><div class="meta"></div></div></div>
+        <div class="tile" data-project="tony-jacklin-golf-club"><img loading="lazy" src="images/main-upscaled/tony-jacklin-golf-club.jpg" alt="Tony Jacklin Golf Club"><div class="tile-overlay"></div><div class="tile-info"><div class="tile-info-bg"></div><span class="label">Tony Jacklin Golf Club</span><div class="meta"></div></div></div>
+        <div class="tile" data-project="k-s-villa"><img loading="lazy" src="images/main-upscaled/k-s-villa.jpg" alt="K.S. Villa"><div class="tile-overlay"></div><div class="tile-info"><div class="tile-info-bg"></div><span class="label">K.S. Villa</span><div class="meta"></div></div></div>
+        <div class="tile" data-project="linfen-gallery"><img loading="lazy" src="images/main-upscaled/linfen-gallery.jpg" alt="Linfen Gallery"><div class="tile-overlay"></div><div class="tile-info"><div class="tile-info-bg"></div><span class="label">Linfen Gallery</span><div class="meta"></div></div></div>
+      </div>
+    </div>
+
+    <!-- COL 3 — DOWN -->
+    <div class="column col-down" data-col-index="2">
+      <div class="column-inner" data-direction="down" data-speed="0.77">
+        <div class="tile" data-project="desert-auomobile-club"><img loading="lazy" src="images/main-upscaled/desert-auomobile-club.jpg" alt="Desert Automobile Club"><div class="tile-overlay"></div><div class="tile-info"><div class="tile-info-bg"></div><span class="label">Desert Automobile Club</span><div class="meta"></div></div></div>
+        <div class="tile" data-project="mumbai-towers"><img loading="lazy" src="images/main-upscaled/mumbai-towers.jpg" alt="Mumbai Towers"><div class="tile-overlay"></div><div class="tile-info"><div class="tile-info-bg"></div><span class="label">Mumbai Towers</span><div class="meta"></div></div></div>
+        <div class="tile" data-project="la-paloma"><img loading="lazy" src="images/main-upscaled/la-paloma.jpg" alt="La Paloma"><div class="tile-overlay"></div><div class="tile-info"><div class="tile-info-bg"></div><span class="label">La Paloma</span><div class="meta"></div></div></div>
+        <div class="tile" data-project="ertaizi-airport-p4"><img loading="lazy" src="images/main-upscaled/ertaizi-airport-p4.jpg" alt="Ertaizi Airport P4"><div class="tile-overlay"></div><div class="tile-info"><div class="tile-info-bg"></div><span class="label">Ertaizi Airport P4</span><div class="meta"></div></div></div>
+        <div class="tile" data-project="c4-marbella"><img loading="lazy" src="images/main-upscaled/c4-marbella.jpg" alt="C4 Marbella"><div class="tile-overlay"></div><div class="tile-info"><div class="tile-info-bg"></div><span class="label">C4 Marbella</span><div class="meta"></div></div></div>
+        <div class="tile" data-project="linfen-library"><img loading="lazy" src="images/main-upscaled/linfen-library.jpg" alt="Linfen Library"><div class="tile-overlay"></div><div class="tile-info"><div class="tile-info-bg"></div><span class="label">Linfen Library</span><div class="meta"></div></div></div>
+      </div>
+    </div>
+
+    <!-- COL 4 — UP -->
+    <div class="column col-up" data-col-index="3">
+      <div class="column-inner" data-direction="up" data-speed="0.83">
+        <div class="tile" data-project="urb-sierra-blanca"><img loading="lazy" src="images/main-upscaled/urb-sierra-blanca.jpg" alt="Urb. Sierra Blanca"><div class="tile-overlay"></div><div class="tile-info"><div class="tile-info-bg"></div><span class="label">Urb. Sierra Blanca</span><div class="meta"></div></div></div>
+        <div class="tile" data-project="n-h-villa"><img loading="lazy" src="images/main-upscaled/n-h-villa.jpg" alt="N.H. Villa"><div class="tile-overlay"></div><div class="tile-info"><div class="tile-info-bg"></div><span class="label">N.H. Villa</span><div class="meta"></div></div></div>
+        <div class="tile" data-project="mr-z-house"><img loading="lazy" src="images/main-upscaled/mr-z-house.jpg" alt="Mr. Z. House"><div class="tile-overlay"></div><div class="tile-info"><div class="tile-info-bg"></div><span class="label">Mr. Z. House</span><div class="meta"></div></div></div>
+        <div class="tile" data-project="ertaizi-airport-p2"><img loading="lazy" src="images/main-upscaled/ertaizi-airport-p2.jpg" alt="Ertaizi Airport P2"><div class="tile-overlay"></div><div class="tile-info"><div class="tile-info-bg"></div><span class="label">Ertaizi Airport P2</span><div class="meta"></div></div></div>
+        <div class="tile" data-project="peral-hotel"><img loading="lazy" src="images/main-upscaled/peral-hotel.jpg" alt="Peral Hotel"><div class="tile-overlay"></div><div class="tile-info"><div class="tile-info-bg"></div><span class="label">Peral Hotel</span><div class="meta"></div></div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== LIGHTBOX ===== -->
+  <div class="lightbox-backdrop" id="lbBackdrop"></div>
+  <div class="lightbox-stage" id="lbStage">
+    <div class="lightbox-panel" id="lbPanel">
+      <img class="lightbox-image" id="lbImage" src="" alt="">
+
+      <!-- Info overlay -->
+      <div class="lb-info-overlay" id="lbInfoOverlay">
+        <div class="lb-info-title" id="lbInfoTitle"></div>
+        <div class="lb-info-meta" id="lbInfoMeta"></div>
+        <div class="lb-info-text" id="lbInfoText"></div>
+      </div>
+
+      <!-- Close -->
+      <button class="lb-btn lb-close" id="lbClose" title="Close">&times;</button>
+      <!-- Info toggle -->
+      <button class="lb-btn lb-info-toggle" id="lbInfoBtn" title="Project info">i</button>
+      <!-- Image nav -->
+      <div class="lb-img-nav">
+        <button class="lb-btn" id="lbPrevImg" title="Previous image">&#8249;</button>
+        <button class="lb-btn" id="lbNextImg" title="Next image">&#8250;</button>
+      </div>
+      <!-- Project nav -->
+      <div class="lb-proj-nav">
+        <button class="lb-btn" id="lbPrevProj" title="Previous project">&#171;</button>
+        <button class="lb-btn" id="lbNextProj" title="Next project">&#187;</button>
+      </div>
+      <!-- Counter -->
+      <div class="lb-counter" id="lbCounter"></div>
+    </div>
+  </div>
+
+  <script>
+    // ===== PROJECT DATABASE =====
+    const PROJECT_DB = {
+      'addoha-hq': {
+        title: 'Addoha HQ', state: 'Under Construction', location: 'Casablanca, Morocco',
+        typology: 'Office Building', date: '2016',
+        images: ['images/main-upscaled/addoha-hq.jpg'],
+        text: '<p>The Addoha Headquarters project represents a bold step in corporate architecture for North Africa, merging contemporary design language with the cultural fabric of Casablanca. The building rises as a geometric composition of intersecting volumes, each calibrated to maximize natural light while providing shading from the intense Moroccan sun.</p><p>The facade system employs a parametric screen inspired by traditional mashrabiya patterns, reinterpreted through computational design methods. Interior spaces flow around a central atrium that serves as the social heart of the complex, connecting the public ground floor with the private executive levels above.</p>'
+      },
+      'an-dong-h-t': {
+        title: 'An Dong H.T.', state: 'Built', location: 'Hangzhou Bay, China',
+        typology: 'Infrastructure', date: '2015',
+        images: ['images/main-upscaled/an-dong-h-t.jpg'],
+        text: '<p>The re-design and expansion of the An Dong highway toll at Hangzhou Bay demanded the creation of an infrastructure element that would transcend its utilitarian purpose. The resulting design stands as both a functional toll station and an architectural landmark introducing travelers to the modernizing bay area.</p><p>Structural steel canopies span the highway lanes with sweeping curves that evoke the motion of traffic below. The integration of photovoltaic panels within the roof structure generates a significant portion of the station\'s energy needs, establishing a precedent for sustainable infrastructure in the region.</p>'
+      },
+      'c4-marbella': {
+        title: 'C4 Marbella', state: 'Basic Project', location: 'Marbella, Spain',
+        typology: 'Single Family Home', date: '2023',
+        images: ['images/main-upscaled/c4-marbella.jpg'],
+        text: '<p>Situated on the sun-drenched hills of Marbella, C4 explores the intersection of Mediterranean vernacular and radical contemporary form. The residence fragments into four interconnected pavilions, each oriented to capture distinct views of the coastline and the Sierra Blanca mountains beyond.</p><p>Material selection grounds the project in its landscape: locally sourced limestone walls emerge from the terrain while expansive glass planes dissolve the boundary between interior refuge and exterior garden.</p>'
+      },
+      'citerion-house': {
+        title: 'Citerion House', state: 'Built', location: 'Marbella, Spain',
+        typology: 'Single Family Home', date: '2006',
+        images: ['images/main-upscaled/citerion-house.jpg'],
+        text: '<p>Citerion House occupies a privileged position overlooking the Mediterranean coast, its form shaped by a rigorous dialogue between site topography and programmatic requirements. The building steps down the hillside in a series of interconnected platforms.</p><p>The architectural language combines clean modernist lines with warm material textures, creating interiors that feel both expansive and intimate. A continuous water feature traces the perimeter of the main living spaces.</p>'
+      },
+      'desert-auomobile-club': {
+        title: 'Desert Automobile Club', state: 'Concept', location: 'Riyadh, Saudi Arabia',
+        typology: 'Automotive Infrastructure', date: '2026',
+        images: ['images/main-upscaled/desert-auomobile-club.jpg'],
+        text: '<p>The Desert Automobile Club envisions a new typology for automotive culture in the Arabian Peninsula. Rising from the desert landscape like an eroded geological formation, the complex houses exhibition galleries, a performance driving circuit, and exclusive members\' lounges.</p><p>The building envelope employs a double-skin system with an outer shell of perforated weathering steel that filters the harsh desert light into dappled interior atmospheres. Wind towers integrated into the architecture reference vernacular cooling strategies.</p>'
+      },
+      'ertaizi-airport-p2': {
+        title: 'Ertaizi Airport P2', state: 'Competition', location: 'Jilin, P.R. China',
+        typology: 'Transportation Infrastructure', date: '2015',
+        images: ['images/main-upscaled/ertaizi-airport-p2.jpg'],
+        text: '<p>This competition entry for the Ertaizi Airport expansion proposes a terminal building whose undulating roofline echoes the mountainous terrain of northeastern China. The structural system creates a vast column-free interior.</p><p>The facade incorporates triple-glazed curtain walls with integrated shading fins. A central skylight spine brings natural light to the deepest parts of the terminal, reducing energy consumption while creating an uplifting passenger experience.</p>'
+      },
+      'ertaizi-airport-p4': {
+        title: 'Ertaizi Airport P4', state: 'Competition', location: 'Jilin, P.R. China',
+        typology: 'Transportation Infrastructure', date: '2015',
+        images: ['images/main-upscaled/ertaizi-airport-p4.jpg'],
+        text: '<p>The Phase 4 proposal takes an evolved approach emphasizing modularity and phased construction. The design breaks the terminal into connected pavilions, each capable of independent operation.</p><p>Landscape integration plays a central role: green roofs and planted courtyards visible from the departure lounges bring seasonal change into the travel experience. Exposed timber glulam beams connect the building to the forested landscape of Jilin Province.</p>'
+      },
+      'estadio-plaza-de-marbella': {
+        title: 'Estadio Plaza de Marbella', state: 'Competition', location: 'Marbella, Spain',
+        typology: 'Sports Infrastructure', date: '2023',
+        images: ['images/main-upscaled/estadio-plaza-de-marbella.jpg'],
+        text: '<p>This competition entry reimagines the sports stadium as an urban plaza, dissolving the traditional boundary between sporting venue and public space. The design integrates commercial, cultural, and recreational programs beneath a sweeping canopy.</p><p>The stadium bowl is carved into the landscape, reducing the building\'s visual mass while creating a natural amphitheatre effect. Surrounding terraced gardens connect the venue to the adjacent urban fabric.</p>'
+      },
+      'k-s-villa': {
+        title: 'K.S. Villa', state: 'Built', location: 'Marbella, Spain',
+        typology: 'Single Family Home', date: '2002',
+        images: ['images/main-upscaled/k-s-villa.jpg'],
+        text: '<p>K.S. Villa is organized around a central courtyard that acts as a climatic buffer and the social core of the dwelling, drawing inspiration from the Roman domus tradition reinterpreted through a contemporary lens.</p><p>The material palette is deliberately restrained: white rendered walls, natural stone floors, and dark timber joinery create a calm backdrop against which Mediterranean light becomes the primary decorative element.</p>'
+      },
+      'la-paloma': {
+        title: 'La Paloma', state: 'Built', location: 'Marbella, Spain',
+        typology: 'Single Family Home - Renovation', date: '2011',
+        images: ['images/main-upscaled/la-paloma.jpg'],
+        text: '<p>The renovation of La Paloma presented the opportunity to revisit a residence originally designed by the TAM studio in the mid-1980s. New programmatic demands required a sensitive intervention respecting the original architectural intentions.</p><p>The project focused on opening the ground floor to create flowing living spaces that connect seamlessly with the exterior terraces and pool area. New interior finishes introduce a refined material palette.</p>'
+      },
+      'linfen-gallery': {
+        title: 'Linfen Gallery', state: 'Project', location: 'Linfen, P.R. China',
+        typology: 'Cultural Facilities', date: '2014',
+        images: ['images/main-upscaled/linfen-gallery.jpg'],
+        text: '<p>The Linfen Gallery establishes a new cultural anchor in a city undergoing rapid transformation. The building\'s form is generated by the intersection of two primary circulation routes, creating galleries of varying proportion and character.</p><p>The facade system of translucent stone panels diffuses daylight into the exhibition spaces while presenting an ethereal presence to the city at night. A rooftop sculpture garden offers panoramic views.</p>'
+      },
+      'linfen-library': {
+        title: 'Linfen Library', state: 'Project', location: 'Linfen, P.R. China',
+        typology: 'Cultural Facilities', date: '2014',
+        images: ['images/main-upscaled/linfen-library.jpg'],
+        text: '<p>The library is conceived as a landscape of terraced reading platforms that cascade from the entrance level down to a sunken garden, each level offering different atmospheres for study and contemplation.</p><p>A central void connects all levels visually and spatially, allowing natural light to penetrate to the lowest reading rooms. The structural grid is expressed honestly in exposed concrete.</p>'
+      },
+      'mr-z-house': {
+        title: 'Mr. Z. House', state: 'Built', location: 'Marbella, Spain',
+        typology: 'Single Family Home', date: '2000',
+        images: ['images/main-upscaled/mr-z-house.jpg'],
+        text: '<p>Mr. Z. House responds to an extensive family program distributed across multiple levels stepping down a steep hillside. The mansion, shaped as an arc that embraces the garden and Mediterranean sea view, allows all living areas direct access to the garden promenade.</p><p>Shared amenities including spa, gymnasium, swimming pool, and landscaped gardens occupy the spaces between private and communal zones, fostering family interaction while respecting individual privacy.</p>'
+      },
+      'mumbai-towers': {
+        title: 'Mumbai Towers', state: 'Competition', location: 'Mumbai, India',
+        typology: 'Mixed-Use (Hybrid) Skyscrapers', date: '2018',
+        images: ['images/main-upscaled/mumbai-towers.jpg'],
+        text: '<p>The Mumbai Towers proposes a pair of hybrid skyscrapers that address the city\'s density challenges through vertical mixed-use programming. The towers interlock at multiple levels through sky bridges housing communal gardens, markets, and recreational spaces.</p><p>The structural system allows floor plates to shift and rotate as they rise, providing optimal solar orientation while generating a dynamic silhouette on the Mumbai skyline.</p>'
+      },
+      'n-h-villa': {
+        title: 'N.H. Villa', state: 'Built', location: 'Marbella, Spain',
+        typology: 'Single Family Home', date: '1997',
+        images: ['images/main-upscaled/n-h-villa.jpg'],
+        text: '<p>One of the studio\'s foundational residential projects. The house negotiates a challenging sloped site through split levels that maintain intimate contact with the terrain at every point.</p><p>The architectural expression is characterized by bold cantilevers and deep recesses. A double-height living room serves as the vertical and social center, connecting upper bedrooms with the pool terrace below.</p>'
+      },
+      'oriental-landscape-hq': {
+        title: 'Oriental Landscape HQ', state: 'Built', location: 'Beijing, China',
+        typology: 'Interior Architecture', date: '2016',
+        images: ['images/main-upscaled/oriental-landscape-hq.jpg'],
+        text: '<p>Commissioned to design the headquarters of China\'s largest landscaping company within Beijing\'s prestigious 798 Art District, the interior architecture maintains corporate elegance while reflecting the nature of the landscaping business.</p><p>Living plant walls, interior water features, and natural material surfaces transform the workspace into a curated landscape experience. Meeting rooms are conceived as garden pavilions.</p>'
+      },
+      'peral-hotel': {
+        title: 'Peral Hotel', state: 'Project', location: 'Marbella, Spain',
+        typology: 'Commercial Building', date: '2023',
+        images: ['images/main-upscaled/peral-hotel.jpg'],
+        text: '<p>The Peral Hotel reimagines boutique hospitality in Marbella. The building presents a restrained street elevation of stacked limestone volumes, each slightly offset to create private terraces.</p><p>A rooftop restaurant shaded by a perforated metal canopy offers views across the old town to the sea. The material language emphasizes local stone, handcrafted ceramics, and warm timber.</p>'
+      },
+      'prestigia-hq': {
+        title: 'Prestigia HQ', state: 'Built', location: 'Casablanca, Morocco',
+        typology: 'Commercial Building', date: '2012',
+        images: ['images/main-upscaled/prestigia-hq.jpg'],
+        text: '<p>Prestigia commissioned ATB Architecture to design a showroom and headquarters that would stand as a singular architectural statement. Faceted planes of glass and solid wall create a crystalline form that captures light differently throughout the day.</p><p>The interior spatial sequence builds from an expansive ground-floor exhibition space through increasingly intimate upper levels to the executive offices at the apex.</p>'
+      },
+      'riyadh-apartments': {
+        title: 'Riyadh Apartments', state: 'Basic Project', location: 'Riyadh, Saudi Arabia',
+        typology: 'Collective Housing', date: '2024',
+        images: ['images/main-upscaled/riyadh-apartments.jpg'],
+        text: '<p>This project addresses growing demand for high-quality collective housing in Saudi Arabia\'s capital. Units are organized around shared courtyards referencing the traditional urban fabric of the Najd region.</p><p>The building envelope employs a deep-set window system with integrated mashrabiya screens providing solar control and visual privacy without sacrificing views or natural ventilation.</p>'
+      },
+      'shanghai-arch': {
+        title: 'Shanghai Arch', state: 'Concept', location: 'Shanghai, P.R. China',
+        typology: 'Infrastructure', date: '2012',
+        images: [
+          'images/projects/shanghai-arch/1.jpg',
+          'images/projects/shanghai-arch/2.jpg',
+          'images/projects/shanghai-arch/3.jpg',
+          'images/projects/shanghai-arch/4.jpg'
+        ],
+        text: '<p>The Shanghai Arch proposes a monumental gateway marking the entrance to a new urban development zone. The design draws on the symbolic power of the arch as a threshold, reinterpreted at an urban scale through contemporary engineering.</p><p>The structure\'s form is generated by the intersection of two parabolic curves. Integrated observation platforms and exhibition spaces transform the infrastructure into a destination.</p>'
+      },
+      't-q-plaza': {
+        title: 'T.Q. Plaza', state: 'Built', location: 'Budva, Montenegro',
+        typology: 'Collective Housing', date: '2009',
+        images: ['images/main-upscaled/t-q-plaza.jpg'],
+        text: '<p>Standing on the seafront at the confluence of Budva\'s two main avenues, T.Q. Plaza\'s facade is modeled into three blocks shaped as bows, emphasizing the naval character of the building.</p><p>The ground floor is given over entirely to commercial and public program. Upper-level apartments benefit from generous balconies with panoramic views of the Adriatic coastline.</p>'
+      },
+      'tony-jacklin-golf-club': {
+        title: 'Tony Jacklin Golf Club', state: 'Built', location: 'Casablanca, Morocco',
+        typology: 'Sports Infrastructure', date: '2012',
+        images: ['images/main-upscaled/tony-jacklin-golf-club.jpg'],
+        text: '<p>Winner of the 2012 design competition, the clubhouse is situated near the forest of Bouskoura. The site\'s natural undulations guided a design whose low-slung profile echoes the rolling fairways.</p><p>The clubhouse wraps around a central terrace offering views across the 18th green. Local stone, dark timber, and weathering steel create a palette that ages gracefully alongside the maturing course.</p>'
+      },
+      'urb-sierra-blanca': {
+        title: 'Urb. Sierra Blanca', state: 'Built', location: 'Marbella, Spain',
+        typology: 'Collective Housing', date: '2005',
+        images: ['images/main-upscaled/urb-sierra-blanca.jpg'],
+        text: '<p>The challenge was building within a densely forested plot where ancient trees colonized the entire ground. A rigorous topographical study mapped every significant tree, and the free patches defined the final building forms.</p><p>This site-first approach produced interconnected dwellings that weave between existing tree canopy, preserving the ecosystem while creating a residential community embedded within the forest.</p>'
+      }
+    };
+
+    const PROJECT_ORDER = [
+      'addoha-hq', 'an-dong-h-t', 'c4-marbella', 'citerion-house',
+      'desert-auomobile-club', 'ertaizi-airport-p2', 'ertaizi-airport-p4',
+      'estadio-plaza-de-marbella', 'k-s-villa', 'la-paloma',
+      'linfen-gallery', 'linfen-library', 'mr-z-house', 'mumbai-towers',
+      'n-h-villa', 'oriental-landscape-hq', 'peral-hotel', 'prestigia-hq',
+      'riyadh-apartments', 'shanghai-arch', 't-q-plaza',
+      'tony-jacklin-golf-club', 'urb-sierra-blanca'
+    ];
+
+    // ===== INJECT META INTO TILES =====
+    function injectMeta() {
+      document.querySelectorAll('.tile[data-project]').forEach(tile => {
+        const id = tile.dataset.project;
+        const proj = PROJECT_DB[id];
+        if (!proj) return;
+        const meta = tile.querySelector('.meta');
+        if (!meta || meta.children.length > 0) return;
+        meta.innerHTML =
+          '<div class="meta-line">' + proj.state + '</div>' +
+          '<div class="meta-line">' + proj.location + '</div>' +
+          '<div class="meta-line">' + proj.typology + '</div>' +
+          '<div class="meta-line">' + proj.date + '</div>';
+      });
+    }
+    injectMeta();
+
+    // ===== HOVER DECELERATION =====
+    const columnHover = [
+      { target: 1, current: 1 },
+      { target: 1, current: 1 },
+      { target: 1, current: 1 },
+      { target: 1, current: 1 }
+    ];
+    const DECEL_RATE = 0.02;
+    const ACCEL_RATE = 0.015;
+
+    // ===== SCROLL WHEEL & MIDDLE-CLICK DRAG =====
+    // scrollBoost: extra speed added by scroll wheel per column (decays over time)
+    const columnScrollBoost = [0, 0, 0, 0];
+    const SCROLL_BOOST_AMOUNT = 0.8;    // speed added per scroll tick
+    const SCROLL_BOOST_DECAY = 0.97;    // multiplier per frame (decays to 0)
+    const SCROLL_BOOST_MAX = 6.0;       // cap on boost magnitude
+
+    // Middle-click drag state
+    let middleDragActive = false;
+    let middleDragColIndex = -1;
+    let middleDragLastY = 0;
+    let middleDragVelocity = 0;
+    const DRAG_FRICTION = 0.94;
+
+    // Track which column the cursor is over
+    let hoveredColIndex = -1;
+
+    document.querySelectorAll('.column').forEach(col => {
+      const idx = parseInt(col.dataset.colIndex);
+      col.addEventListener('mouseenter', () => {
+        columnHover[idx].target = 0;
+        hoveredColIndex = idx;
+      });
+      col.addEventListener('mouseleave', () => {
+        columnHover[idx].target = 1;
+        if (hoveredColIndex === idx) hoveredColIndex = -1;
+      });
+    });
+
+    // Scroll wheel: accelerate/reverse column under cursor
+    document.addEventListener('wheel', function(e) {
+      if (lightboxOpen) return;
+      if (hoveredColIndex < 0) return;
+      e.preventDefault();
+      // deltaY > 0 = scroll down = boost in column's natural direction
+      // deltaY < 0 = scroll up = reverse direction (negative boost)
+      var delta = Math.sign(e.deltaY) * SCROLL_BOOST_AMOUNT;
+      columnScrollBoost[hoveredColIndex] += delta;
+      // Clamp
+      columnScrollBoost[hoveredColIndex] = Math.max(-SCROLL_BOOST_MAX,
+        Math.min(SCROLL_BOOST_MAX, columnScrollBoost[hoveredColIndex]));
+    }, { passive: false });
+
+    // Middle mouse button drag
+    document.addEventListener('mousedown', function(e) {
+      if (e.button !== 1) return; // middle button only
+      if (lightboxOpen) return;
+      e.preventDefault();
+      if (hoveredColIndex >= 0) {
+        middleDragActive = true;
+        middleDragColIndex = hoveredColIndex;
+        middleDragLastY = e.clientY;
+        middleDragVelocity = 0;
+        document.body.style.cursor = 'grabbing';
+      }
+    });
+
+    document.addEventListener('mousemove', function(e) {
+      if (!middleDragActive) return;
+      var dy = e.clientY - middleDragLastY;
+      middleDragVelocity = dy; // pixels moved this frame
+      middleDragLastY = e.clientY;
+    });
+
+    document.addEventListener('mouseup', function(e) {
+      if (e.button !== 1) return;
+      if (middleDragActive) {
+        middleDragActive = false;
+        document.body.style.cursor = '';
+        // Convert remaining velocity to scroll boost for momentum
+        if (middleDragColIndex >= 0) {
+          columnScrollBoost[middleDragColIndex] += middleDragVelocity * 0.05;
+        }
+      }
+    });
+
+    // ===== LIGHTBOX STATE =====
+    let lightboxOpen = false;
+    let currentProjectId = null;
+    let currentImageIndex = 0;
+    let infoVisible = false;
+    let animationPaused = false;
+
+    const lbBackdrop  = document.getElementById('lbBackdrop');
+    const lbStage     = document.getElementById('lbStage');
+    const lbPanel     = document.getElementById('lbPanel');
+    const lbImage     = document.getElementById('lbImage');
+    const lbClose     = document.getElementById('lbClose');
+    const lbInfoBtn   = document.getElementById('lbInfoBtn');
+    const lbInfoOverlay = document.getElementById('lbInfoOverlay');
+    const lbInfoTitle = document.getElementById('lbInfoTitle');
+    const lbInfoMeta  = document.getElementById('lbInfoMeta');
+    const lbInfoText  = document.getElementById('lbInfoText');
+    const lbPrevImg   = document.getElementById('lbPrevImg');
+    const lbNextImg   = document.getElementById('lbNextImg');
+    const lbPrevProj  = document.getElementById('lbPrevProj');
+    const lbNextProj  = document.getElementById('lbNextProj');
+    const lbCounter   = document.getElementById('lbCounter');
+    const kineticGrid = document.getElementById('kineticGrid');
+    const navOverlay  = document.getElementById('navOverlay');
+    const vignetteEl  = document.getElementById('vignette');
+
+    function openLightbox(projectId, imgIndex) {
+      const proj = PROJECT_DB[projectId];
+      if (!proj) { console.error('Project not found:', projectId); return; }
+
+      imgIndex = imgIndex || 0;
+      currentProjectId = projectId;
+      currentImageIndex = imgIndex;
+      lightboxOpen = true;
+      infoVisible = false;
+      animationPaused = true;
+
+      // Load image
+      lbImage.src = proj.images[imgIndex];
+      updateCounter();
+
+      // Populate info
+      lbInfoTitle.textContent = proj.title;
+      lbInfoMeta.innerHTML = proj.state + ' &middot; ' + proj.location + '<br>' + proj.typology + ' &middot; ' + proj.date;
+      lbInfoText.innerHTML = proj.text;
+      lbInfoOverlay.classList.remove('visible');
+      lbInfoBtn.classList.remove('active');
+
+      // Dim background, show lightbox
+      kineticGrid.classList.add('dimmed');
+      navOverlay.classList.add('hidden');
+      vignetteEl.classList.add('hidden');
+      lbBackdrop.classList.add('active');
+      lbStage.classList.add('active');
+
+      // Reset panel state then trigger unfold
+      lbPanel.classList.remove('open', 'closing');
+      // Force reflow so transition restarts
+      void lbPanel.offsetWidth;
+      requestAnimationFrame(() => {
+        lbPanel.classList.add('open');
+      });
+    }
+
+    function closeLightbox() {
+      lbPanel.classList.remove('open');
+      lbPanel.classList.add('closing');
+      lightboxOpen = false;
+      animationPaused = false;
+
+      setTimeout(() => {
+        lbBackdrop.classList.remove('active');
+        lbStage.classList.remove('active');
+        kineticGrid.classList.remove('dimmed');
+        navOverlay.classList.remove('hidden');
+        vignetteEl.classList.remove('hidden');
+        lbPanel.classList.remove('closing');
+      }, 550);
+    }
+
+    function showImage(index) {
+      const proj = PROJECT_DB[currentProjectId];
+      if (!proj) return;
+      currentImageIndex = ((index % proj.images.length) + proj.images.length) % proj.images.length;
+      lbImage.src = proj.images[currentImageIndex];
+      updateCounter();
+    }
+
+    function switchProject(direction) {
+      var idx = PROJECT_ORDER.indexOf(currentProjectId);
+      var next = ((idx + direction) % PROJECT_ORDER.length + PROJECT_ORDER.length) % PROJECT_ORDER.length;
+
+      // Page-turn: next(+1) folds left, prev(-1) folds right
+      var closeClass = direction > 0 ? 'close-left' : 'close-right';
+      var openClass = direction > 0 ? 'open-from-right' : 'open-from-left';
+
+      lbPanel.classList.remove('open', 'open-from-right', 'open-from-left');
+      lbPanel.classList.add(closeClass);
+
+      setTimeout(function() {
+        lbPanel.classList.remove(closeClass, 'closing');
+        // Set the opening origin before triggering open
+        var proj = PROJECT_DB[PROJECT_ORDER[next]];
+        if (!proj) return;
+
+        currentProjectId = PROJECT_ORDER[next];
+        currentImageIndex = 0;
+        lbImage.src = proj.images[0];
+        updateCounter();
+        lbInfoTitle.textContent = proj.title;
+        lbInfoMeta.innerHTML = proj.state + ' &middot; ' + proj.location + '<br>' + proj.typology + ' &middot; ' + proj.date;
+        lbInfoText.innerHTML = proj.text;
+        if (infoVisible) { infoVisible = false; lbInfoOverlay.classList.remove('visible'); lbInfoBtn.classList.remove('active'); }
+
+        // Start from the opposite edge
+        if (direction > 0) {
+          lbPanel.style.transformOrigin = 'right center';
+          lbPanel.style.transform = 'rotateY(60deg) scale(0.95)';
+        } else {
+          lbPanel.style.transformOrigin = 'left center';
+          lbPanel.style.transform = 'rotateY(-60deg) scale(0.95)';
+        }
+        lbPanel.style.opacity = '0';
+
+        void lbPanel.offsetWidth; // force reflow
+        lbPanel.style.transform = '';
+        lbPanel.style.opacity = '';
+        lbPanel.style.transformOrigin = '';
+        lbPanel.classList.add(openClass);
+
+        // Clean up class after transition
+        setTimeout(function() {
+          lbPanel.classList.remove(openClass);
+          lbPanel.classList.add('open');
+        }, 500);
+      }, 380);
+    }
+
+    function updateCounter() {
+      const proj = PROJECT_DB[currentProjectId];
+      if (!proj) return;
+      lbCounter.textContent = (currentImageIndex + 1) + ' / ' + proj.images.length;
+    }
+
+    function toggleInfo() {
+      infoVisible = !infoVisible;
+      lbInfoOverlay.classList.toggle('visible', infoVisible);
+      lbInfoBtn.classList.toggle('active', infoVisible);
+    }
+
+    // ===== EVENT LISTENERS =====
+    lbClose.addEventListener('click', function(e) { e.stopPropagation(); closeLightbox(); });
+    lbInfoBtn.addEventListener('click', function(e) { e.stopPropagation(); toggleInfo(); });
+    lbPrevImg.addEventListener('click', function(e) { e.stopPropagation(); showImage(currentImageIndex - 1); });
+    lbNextImg.addEventListener('click', function(e) { e.stopPropagation(); showImage(currentImageIndex + 1); });
+    lbPrevProj.addEventListener('click', function(e) { e.stopPropagation(); switchProject(-1); });
+    lbNextProj.addEventListener('click', function(e) { e.stopPropagation(); switchProject(1); });
+
+    // Click image to advance to next image
+    lbImage.addEventListener('click', function(e) { e.stopPropagation(); showImage(currentImageIndex + 1); });
+    lbImage.style.cursor = 'pointer';
+
+    // Click backdrop to close
+    lbBackdrop.addEventListener('click', closeLightbox);
+
+    // Keyboard
+    document.addEventListener('keydown', function(e) {
+      if (!lightboxOpen) return;
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowLeft') showImage(currentImageIndex - 1);
+      if (e.key === 'ArrowRight') showImage(currentImageIndex + 1);
+      if (e.key === 'ArrowUp') { e.preventDefault(); switchProject(-1); }
+      if (e.key === 'ArrowDown') { e.preventDefault(); switchProject(1); }
+      if (e.key === 'i' || e.key === 'I') toggleInfo();
+    });
+
+    // CLICK on tiles opens lightbox (both left-click and right-click)
+    function findTileFromEvent(e) {
+      var el = e.target;
+      while (el && el !== document.body) {
+        if (el.classList && el.classList.contains('tile') && el.dataset.project) {
+          return el;
+        }
+        el = el.parentElement;
+      }
+      return null;
+    }
+
+    // Left-click
+    document.addEventListener('click', function(e) {
+      if (lightboxOpen) return;
+      var tile = findTileFromEvent(e);
+      if (tile) {
+        e.preventDefault();
+        openLightbox(tile.dataset.project);
+      }
+    });
+
+    // Right-click (also supported)
+    document.addEventListener('contextmenu', function(e) {
+      if (lightboxOpen) { e.preventDefault(); return; }
+      var tile = findTileFromEvent(e);
+      if (tile) {
+        e.preventDefault();
+        openLightbox(tile.dataset.project);
+      }
+    });
+
+    // ===== KINETIC ANIMATION =====
+    function waitForImages() {
+      var images = document.querySelectorAll('.tile img');
+      var promises = [];
+      images.forEach(function(img) {
+        if (img.complete) { promises.push(Promise.resolve()); return; }
+        promises.push(new Promise(function(resolve) {
+          img.onload = resolve;
+          img.onerror = resolve;
+        }));
+      });
+      return Promise.all(promises);
+    }
+
+    waitForImages().then(function() {
+      // Duplicate tiles for seamless loop
+      document.querySelectorAll('.column-inner').forEach(function(inner) {
+        var original = inner.innerHTML;
+        inner.innerHTML = original + original;
+      });
+
+      // Re-inject meta for duplicated tiles
+      injectMeta();
+
+      var columns = document.querySelectorAll('.column-inner');
+      var state = [];
+      columns.forEach(function(col, i) {
+        var totalHeight = col.scrollHeight / 2;
+        var direction = col.dataset.direction;
+        var speed = parseFloat(col.dataset.speed);
+        state.push({
+          el: col,
+          colIndex: i,
+          offset: direction === 'down' ? -totalHeight : 0,
+          totalHeight: totalHeight,
+          direction: direction,
+          baseSpeed: speed
+        });
+      });
+
+      var vh = window.innerHeight;
+      var EDGE_MARGIN = 10;
+
+      // Update on resize
+      window.addEventListener('resize', function() { vh = window.innerHeight; });
+
+      function updateLabels() {
+        for (var si = 0; si < state.length; si++) {
+          var s = state[si];
+          var tiles = s.el.querySelectorAll('.tile');
+          var isDown = s.direction === 'down';
+
+          for (var ti = 0; ti < tiles.length; ti++) {
+            var tile = tiles[ti];
+            var info = tile.querySelector('.tile-info');
+            if (!info) continue;
+
+            var rect = tile.getBoundingClientRect();
+            var tileH = rect.height;
+
+            if (rect.bottom < -50 || rect.top > vh + 50) continue;
+
+            var infoH = 18; // approximate label height
+            var labelTop;
+
+            if (isDown) {
+              // Descending: info sticks near bottom of viewport
+              labelTop = (vh - EDGE_MARGIN - infoH) - rect.top;
+              labelTop = Math.max(EDGE_MARGIN, Math.min(labelTop, tileH - infoH - EDGE_MARGIN));
+            } else {
+              // Ascending: info sticks near top of viewport
+              labelTop = EDGE_MARGIN - rect.top;
+              labelTop = Math.max(EDGE_MARGIN, Math.min(labelTop, tileH - infoH - EDGE_MARGIN));
+            }
+
+            info.style.top = labelTop + 'px';
+          }
+        }
+      }
+
+      function animate() {
+        // Hover easing
+        for (var i = 0; i < columnHover.length; i++) {
+          var ch = columnHover[i];
+          if (ch.current < ch.target) {
+            ch.current = Math.min(ch.target, ch.current + ACCEL_RATE);
+          } else if (ch.current > ch.target) {
+            ch.current = Math.max(ch.target, ch.current - DECEL_RATE);
+          }
+        }
+
+        // Decay scroll boost
+        for (var i = 0; i < columnScrollBoost.length; i++) {
+          columnScrollBoost[i] *= SCROLL_BOOST_DECAY;
+          if (Math.abs(columnScrollBoost[i]) < 0.001) columnScrollBoost[i] = 0;
+        }
+
+        // Decay middle-drag velocity
+        if (!middleDragActive) {
+          middleDragVelocity *= DRAG_FRICTION;
+          if (Math.abs(middleDragVelocity) < 0.01) middleDragVelocity = 0;
+        }
+
+        var globalPause = animationPaused ? 0 : 1;
+
+        for (var si = 0; si < state.length; si++) {
+          var s = state[si];
+          var hoverMul = columnHover[s.colIndex].current;
+          var baseMotion = s.baseSpeed * hoverMul * globalPause;
+          var scrollBoost = columnScrollBoost[s.colIndex];
+
+          // Middle-drag: directly move this column's offset
+          var dragOffset = 0;
+          if (middleDragActive && middleDragColIndex === s.colIndex) {
+            dragOffset = middleDragVelocity;
+          } else if (!middleDragActive && middleDragColIndex === s.colIndex) {
+            dragOffset = middleDragVelocity; // momentum after release
+          }
+
+          if (s.direction === 'down') {
+            // Natural direction is down (positive offset increase)
+            s.offset += baseMotion + scrollBoost + dragOffset;
+            // Wrap seamlessly
+            if (s.offset >= 0) s.offset -= s.totalHeight;
+            if (s.offset < -s.totalHeight) s.offset += s.totalHeight;
+          } else {
+            // Natural direction is up (negative offset decrease)
+            s.offset -= baseMotion;
+            s.offset += scrollBoost + dragOffset; // scroll/drag adds directly
+            // Wrap seamlessly
+            if (s.offset <= -s.totalHeight) s.offset += s.totalHeight;
+            if (s.offset > 0) s.offset -= s.totalHeight;
+          }
+          s.el.style.transform = 'translateY(' + s.offset + 'px)';
+        }
+
+        updateLabels();
+        requestAnimationFrame(animate);
+      }
+
+      animate();
+    });
+
+    // Subtle parallax
+    var grid = document.querySelector('.kinetic-grid');
+    document.addEventListener('mousemove', function(e) {
+      if (lightboxOpen) return;
+      if (middleDragActive) return; // don't parallax while dragging
+      var x = (e.clientX / window.innerWidth - 0.5) * 6;
+      var y = (e.clientY / window.innerHeight - 0.5) * 4;
+      grid.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
+    });
+
+    // Prevent browser auto-scroll on middle click
+    document.addEventListener('auxclick', function(e) {
+      if (e.button === 1) e.preventDefault();
+    });
+  </script>
+
+</body>
+</html>

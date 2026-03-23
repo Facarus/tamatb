@@ -1,0 +1,60 @@
+---
+import Layout from '../../../layouts/Layout.astro'
+import { projects } from '../../../data/projects'
+import { useTranslations, getLocalizedPath } from '../../../i18n/utils'
+
+const locale = 'zh'
+const t = useTranslations(locale)
+
+export function getStaticPaths() {
+  return projects.map((project) => ({
+    params: { id: project.id },
+    props: { project },
+  }))
+}
+
+const { project } = Astro.props
+// For Chinese, fall back to English for now
+const description = project.description.en
+---
+
+<Layout title={project.title} locale={locale} description={description.slice(0, 160)}>
+  <section class="py-12 px-6">
+    <div class="container mx-auto max-w-4xl">
+      <a href={getLocalizedPath('/projects', locale)} class="inline-flex items-center text-sm text-gray-500 hover:text-gray-900 transition-colors mb-8">
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+        {t.projects.backToProjects}
+      </a>
+
+      <div class="aspect-video bg-gray-200 mb-8 overflow-hidden">
+        <img src={project.image} alt={project.title} class="w-full h-full object-cover" />
+      </div>
+
+      <h1 class="text-4xl font-light tracking-wide text-gray-900 mb-2">{project.title}</h1>
+      <p class="text-gray-500 mb-8">{project.location} • {project.year}</p>
+
+      <div class="prose prose-lg max-w-none">
+        <p class="text-gray-600 leading-relaxed">{description}</p>
+      </div>
+
+      <div class="mt-12">
+        <h2 class="text-2xl font-light text-gray-900 mb-6">{t.projects.gallery}</h2>
+        <div class="grid md:grid-cols-2 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div class="aspect-[4/3] bg-gray-200 flex items-center justify-center">
+              <span class="text-gray-400">Image {i}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div class="mt-16 pt-8 border-t border-gray-200 flex justify-between">
+        <a href={getLocalizedPath('/projects', locale)} class="text-sm text-gray-500 hover:text-gray-900 transition-colors">
+          ← {t.projects.allProjects}
+        </a>
+      </div>
+    </div>
+  </section>
+</Layout>

@@ -1,82 +1,78 @@
 ---
 import Layout from '../layouts/Layout.astro'
+import { useTranslations, type Locale } from '../i18n/utils'
+
+export interface Props {
+  locale?: Locale
+}
+
+const { locale = 'en' } = Astro.props
+const t = useTranslations(locale)
 ---
 
-<Layout title="Estudio" description="TAM ATB Architecture - Más de 40 años de experiencia en arquitectura">
+<Layout title={t.studio.title} locale={locale} description={t.studio.intro.slice(0, 160)}>
   <section class="py-12 px-6">
     <div class="container mx-auto">
-      <h1 class="text-4xl font-light tracking-wide text-gray-900 mb-4">Estudio</h1>
+      <h1 class="text-4xl font-light tracking-wide text-gray-900 mb-4">{t.studio.title}</h1>
 
       <div class="grid lg:grid-cols-2 gap-16 mt-12">
         <!-- About Text -->
         <div>
           <div class="space-y-6 text-gray-600 leading-relaxed">
-            <p>
-              El estudio de diseño TAM ATB Architecture cuenta con una trayectoria profesional de más de 40 años en el campo de la arquitectura y el urbanismo a nivel nacional e internacional. Lo han dirigido los arquitectos Angel Taborda y Victoria Gauna, con eficientes y entusiastas colaboradores de distintas áreas del sector.
-            </p>
-            <p>
-              Ahora, lo continúan haciendo Victoria Gauna y Facundo Taborda junto a un equipo de colaboradores especializados.
-            </p>
-            <p>
-              Hoy, más que nunca, se pone en evidencia que la construcción del hábitat es un objetivo multidisciplinar, por ello trabajamos con un equipo de arquitectos, arquitectos técnicos, constructores, interioristas, diseñadores, paisajistas, fotógrafos y nuevos técnicos en áreas que la contemporaneidad propicia en cada uno de nuestros proyectos. Todos ellos con una amplia experiencia en el sector.
-            </p>
+            <p>{t.studio.intro}</p>
+            <p>{t.studio.intro2}</p>
+            <p>{t.studio.intro3}</p>
           </div>
         </div>
 
         <!-- Studio Image -->
-        <div class="aspect-[4/3] bg-gray-200 flex items-center justify-center">
-          <span class="text-gray-400">Studio Image</span>
+        <div class="aspect-[4/3] bg-gray-200 overflow-hidden">
+          <img src="/images/studio/main.jpg" alt="TAM ATB Architecture Studio" class="w-full h-full object-cover" />
         </div>
       </div>
 
-      <!-- Qué Hacemos -->
+      <!-- What We Do -->
       <div class="mt-20">
-        <h2 class="text-2xl font-light text-gray-900 mb-6">Qué Hacemos</h2>
+        <h2 class="text-2xl font-light text-gray-900 mb-6">{t.studio.whatWeDo}</h2>
         <p class="text-gray-600 leading-relaxed max-w-4xl">
-          Diseñamos y construimos todo tipo de proyectos y espacios: viviendas unifamiliares, urbanizaciones, edificios comerciales, edificios singulares, torres, hoteles, instalaciones deportivas, exposiciones e instalaciones efímeras. También nos dedicamos a las reformas, proyectos de interiorismo y diseño de jardines. Nos adaptamos a distintos presupuestos y ponemos toda nuestra experiencia y conocimiento al servicio de nuestros clientes.
+          {t.studio.whatWeDoText}
         </p>
       </div>
 
-      <!-- Nuestra Filosofía -->
+      <!-- Our Philosophy -->
       <div class="mt-20">
-        <h2 class="text-2xl font-light text-gray-900 mb-6">Nuestra Filosofía</h2>
+        <h2 class="text-2xl font-light text-gray-900 mb-6">{t.studio.philosophy}</h2>
         <div class="space-y-4 text-gray-600 leading-relaxed max-w-4xl">
-          <p>
-            Para nosotros, la estética y la alta calidad de diseño no compite con la funcionalidad, sino que la complementa, y además aumenta el valor del objeto y en consecuencia el territorio.
-          </p>
-          <p>
-            Las características de La Costa del Sol, y en especial, Marbella -su topografía, su paisaje- sugieren una apropiación emocional del entorno natural, pero también la intervención humana se constituye en expresión del paisaje.
-          </p>
-          <p>
-            Por ello se hace imprescindible el concepto del diseño global del objeto, incluido lo que denominamos la quinta fachada: las cubiertas de los edificios. Singularidades que son imprescindibles en nuestro estudio.
-          </p>
+          <p>{t.studio.philosophyText1}</p>
+          <p>{t.studio.philosophyText2}</p>
+          <p>{t.studio.philosophyText3}</p>
         </div>
       </div>
 
       <!-- Team Section -->
       <div class="mt-20">
-        <h2 class="text-2xl font-light text-gray-900 mb-12">Equipo</h2>
+        <h2 class="text-2xl font-light text-gray-900 mb-12">{t.studio.team}</h2>
         <div class="grid md:grid-cols-3 gap-8">
           <div class="text-center">
-            <div class="w-32 h-32 rounded-full bg-gray-200 mx-auto mb-4 flex items-center justify-center">
-              <span class="text-gray-400 text-xs">Photo</span>
+            <div class="w-32 h-32 rounded-full bg-gray-200 mx-auto mb-4 overflow-hidden">
+              <img src="/images/studio/team-1.jpg" alt="Victoria Gauna" class="w-full h-full object-cover" />
             </div>
             <h3 class="text-lg font-light text-gray-900">Victoria Gauna</h3>
-            <p class="text-sm text-gray-500">Arquitecta</p>
+            <p class="text-sm text-gray-500">{t.studio.architect}</p>
           </div>
           <div class="text-center">
-            <div class="w-32 h-32 rounded-full bg-gray-200 mx-auto mb-4 flex items-center justify-center">
-              <span class="text-gray-400 text-xs">Photo</span>
+            <div class="w-32 h-32 rounded-full bg-gray-200 mx-auto mb-4 overflow-hidden">
+              <img src="/images/studio/team-2.jpg" alt="Facundo Taborda" class="w-full h-full object-cover" />
             </div>
             <h3 class="text-lg font-light text-gray-900">Facundo Taborda</h3>
-            <p class="text-sm text-gray-500">Arquitecto</p>
+            <p class="text-sm text-gray-500">{t.studio.architect}</p>
           </div>
           <div class="text-center">
             <div class="w-32 h-32 rounded-full bg-gray-200 mx-auto mb-4 flex items-center justify-center">
               <span class="text-gray-400 text-xs">Photo</span>
             </div>
             <h3 class="text-lg font-light text-gray-900">Angel Taborda</h3>
-            <p class="text-sm text-gray-500">Arquitecto Fundador</p>
+            <p class="text-sm text-gray-500">{t.studio.foundingArchitect}</p>
           </div>
         </div>
       </div>

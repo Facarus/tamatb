@@ -1,31 +1,69 @@
 ---
 import Layout from '../layouts/Layout.astro'
+import { presentItems } from '../data/present'
+import { useTranslations, getLocalizedPath, type Locale } from '../i18n/utils'
+
+export interface Props {
+  locale?: Locale
+}
+
+const { locale = 'en' } = Astro.props
+const t = useTranslations(locale)
 ---
 
-<Layout title="Present" description="Current projects and ongoing work">
+<Layout title={t.present.title} locale={locale} description={t.present.subtitle}>
   <section class="py-12 px-6">
     <div class="container mx-auto">
-      <h1 class="text-4xl font-light tracking-wide text-gray-900 mb-4">Present</h1>
+      <h1 class="text-4xl font-light tracking-wide text-gray-900 mb-4">{t.present.title}</h1>
       <p class="text-gray-600 mb-12 max-w-2xl">
-        Current projects in development and ongoing architectural work.
+        {t.present.subtitle}
       </p>
 
-      <!-- Current Projects -->
-      <div class="grid md:grid-cols-2 gap-12">
-        {[1, 2].map((i) => (
-          <div class="group">
-            <div class="aspect-video bg-gray-200 overflow-hidden mb-6">
-              <div class="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
-                <span class="text-gray-400">Current Project {i}</span>
-              </div>
+      <!-- Present Items -->
+      <div class="space-y-24">
+        {presentItems.map((item) => (
+          <article class="border-t border-gray-200 pt-12">
+            <!-- Hero Image -->
+            <div class="aspect-[21/9] bg-gray-200 overflow-hidden mb-8">
+              <img
+                src={item.images[0]}
+                alt={item.title}
+                class="w-full h-full object-cover"
+              />
             </div>
-            <h3 class="text-2xl font-light text-gray-900 mb-2">Current Project {i}</h3>
-            <p class="text-gray-600 leading-relaxed">
-              Description of the ongoing project, its scope, and expected completion.
-              This section will be updated with real project information.
-            </p>
-            <p class="text-sm text-gray-500 mt-4">Status: In Progress</p>
-          </div>
+
+            <!-- Content -->
+            <div class="max-w-4xl">
+              <p class="text-sm text-gray-500 mb-2">{item.year}</p>
+              <h2 class="text-3xl font-light text-gray-900 mb-2">{item.title}</h2>
+              <h3 class="text-xl font-light text-gray-600 mb-6">{item.subtitle}</h3>
+
+              <div class="prose prose-lg max-w-none text-gray-600 leading-relaxed whitespace-pre-line mb-8">
+                {locale === 'es' ? item.description.es : item.description.en}
+              </div>
+
+              {item.collaboration && (
+                <p class="text-sm text-gray-500 italic">{item.collaboration}</p>
+              )}
+            </div>
+
+            <!-- Image Gallery -->
+            {item.images.length > 1 && (
+              <div class="mt-12">
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {item.images.slice(1).map((img, i) => (
+                    <div class="aspect-[4/3] bg-gray-200 overflow-hidden">
+                      <img
+                        src={img}
+                        alt={`${item.title} - Image ${i + 2}`}
+                        class="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </article>
         ))}
       </div>
     </div>

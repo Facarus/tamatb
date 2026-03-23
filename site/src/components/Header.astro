@@ -1,31 +1,39 @@
 ---
+import { useTranslations, getLocalizedPath, type Locale } from '../i18n/utils'
+
+interface Props {
+  locale?: Locale
+}
+
+const { locale = 'en' } = Astro.props
+const t = useTranslations(locale)
+
 const menuItems = [
-  { name: 'Projects', href: '/projects' },
-  { name: 'Present', href: '/present' },
-  { name: 'Studio', href: '/studio' },
-  { name: 'Obra', href: '/obra' },
-  { name: 'Videos', href: '/videos' },
-  { name: 'Contact', href: '/contact' },
+  { name: t.nav.projects, href: getLocalizedPath('/projects', locale) },
+  { name: t.nav.present, href: getLocalizedPath('/present', locale) },
+  { name: t.nav.studio, href: getLocalizedPath('/studio', locale) },
+  { name: t.nav.obra, href: getLocalizedPath('/obra', locale) },
+  { name: t.nav.videos, href: getLocalizedPath('/videos', locale) },
+  { name: t.nav.contact, href: getLocalizedPath('/contact', locale) },
 ]
 
 const languages = [
-  { code: 'ES', name: 'Español', href: '/' },
-  { code: 'EN', name: 'English', href: '/en' },
-  { code: 'DE', name: 'Deutsch', href: '/de' },
+  { code: 'EN', locale: 'en' as Locale, name: 'English' },
+  { code: 'ES', locale: 'es' as Locale, name: 'Español' },
+  { code: 'ZH', locale: 'zh' as Locale, name: '中文' },
 ]
 
-const currentLang = 'ES'
+// Get current path without locale prefix for language switching
+const currentPath = Astro.url.pathname.replace(/^\/(en|es|zh)/, '') || '/'
 ---
 
 <header class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100">
   <div class="container mx-auto px-6 py-4">
     <div class="flex items-center justify-between">
       <!-- Logo & Slogan -->
-      <a href="/" class="flex items-center gap-4">
-        <!-- Logo Placeholder -->
-        <div class="w-12 h-12 bg-gray-200 flex items-center justify-center text-gray-500 text-xs font-medium border border-gray-300">
-          LOGO
-        </div>
+      <a href={getLocalizedPath('/', locale)} class="flex items-center gap-4">
+        <!-- Logo -->
+        <img src="/images/logo/logo.png" alt="TAM ATB Logo" class="w-12 h-12 object-contain" />
         <div class="hidden sm:block">
           <h1 class="text-lg font-medium tracking-wide text-gray-900">TAM ATB</h1>
           <p class="text-xs text-gray-500 tracking-widest uppercase">Architecture</p>
@@ -47,9 +55,9 @@ const currentLang = 'ES'
         <div class="flex items-center gap-2 ml-4 pl-4 border-l border-gray-200">
           {languages.map((lang) => (
             <a
-              href={lang.href}
+              href={getLocalizedPath(currentPath, lang.locale)}
               class={`text-xs font-medium tracking-wide transition-colors ${
-                lang.code === currentLang
+                lang.locale === locale
                   ? 'text-gray-900'
                   : 'text-gray-400 hover:text-gray-600'
               }`}
@@ -67,9 +75,9 @@ const currentLang = 'ES'
         <div class="flex items-center gap-1">
           {languages.map((lang) => (
             <a
-              href={lang.href}
+              href={getLocalizedPath(currentPath, lang.locale)}
               class={`text-xs font-medium tracking-wide transition-colors px-1 ${
-                lang.code === currentLang
+                lang.locale === locale
                   ? 'text-gray-900'
                   : 'text-gray-400 hover:text-gray-600'
               }`}

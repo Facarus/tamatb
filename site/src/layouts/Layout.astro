@@ -2,17 +2,23 @@
 import '../styles/global.css'
 import Header from '../components/Header.astro'
 import Footer from '../components/Footer.astro'
+import { getLocaleFromUrl, useTranslations, type Locale } from '../i18n/utils'
 
 interface Props {
   title: string
   description?: string
+  locale?: Locale
 }
 
-const { title, description = 'TAM ATB Architecture - Marbella' } = Astro.props
+const urlLocale = getLocaleFromUrl(Astro.url)
+const { title, description = 'TAM ATB Architecture - Marbella', locale = urlLocale } = Astro.props
+const t = useTranslations(locale)
+
+const langMap = { en: 'en', es: 'es', zh: 'zh-CN' }
 ---
 
 <!doctype html>
-<html lang="es">
+<html lang={langMap[locale]}
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -24,10 +30,10 @@ const { title, description = 'TAM ATB Architecture - Marbella' } = Astro.props
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
   </head>
   <body class="min-h-screen flex flex-col font-sans text-gray-900 bg-white">
-    <Header />
+    <Header locale={locale} />
     <main class="flex-1">
       <slot />
     </main>
-    <Footer />
+    <Footer locale={locale} />
   </body>
 </html>

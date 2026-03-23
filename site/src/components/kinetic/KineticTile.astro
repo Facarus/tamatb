@@ -1,0 +1,25 @@
+---
+import type { Project } from '../../data/projects'
+
+interface Props {
+  project: Project
+  direction: 'up' | 'down'
+}
+
+const { project, direction } = Astro.props
+---
+
+<div class="tile" data-project={project.id}>
+  <img loading="lazy" src={project.gridImage} alt={project.title} />
+  <div class="tile-overlay"></div>
+  <div class="tile-info">
+    <div class="tile-info-bg"></div>
+    <span class="label">{project.title}</span>
+    <div class="meta">
+      <div class="meta-line">{project.state}</div>
+      <div class="meta-line">{project.location}</div>
+      <div class="meta-line">{project.typology}</div>
+      <div class="meta-line">{project.year}</div>
+    </div>
+  </div>
+</div>

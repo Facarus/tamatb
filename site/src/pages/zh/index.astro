@@ -1,0 +1,40 @@
+---
+import KineticLayout from '../../layouts/KineticLayout.astro'
+import KineticGrid from '../../components/kinetic/KineticGrid.astro'
+import KineticNav from '../../components/kinetic/KineticNav.astro'
+import KineticLightbox from '../../components/kinetic/KineticLightbox.astro'
+import Vignette from '../../components/kinetic/Vignette.astro'
+import { projects, gridColumns, columnSpeeds, columnDirections, projectOrder, buildClientProjectDB } from '../../data/projects'
+
+const locale = 'zh'
+const clientData = JSON.stringify({
+  projectDB: buildClientProjectDB(),
+  projectOrder,
+})
+---
+
+<KineticLayout title="首页" locale={locale}>
+  <KineticNav locale={locale} />
+  <Vignette />
+  <KineticGrid
+    projects={projects}
+    columns={gridColumns}
+    speeds={columnSpeeds}
+    directions={columnDirections}
+  />
+  <KineticLightbox />
+
+  <script type="application/json" id="project-data" set:html={clientData} />
+
+  <script>
+    import { initKineticGrid } from '../../scripts/kinetic-engine'
+    import { initLightbox } from '../../scripts/lightbox'
+
+    const dataEl = document.getElementById('project-data')
+    if (dataEl) {
+      const { projectDB, projectOrder } = JSON.parse(dataEl.textContent || '{}')
+      initKineticGrid()
+      initLightbox(projectDB, projectOrder)
+    }
+  </script>
+</KineticLayout>

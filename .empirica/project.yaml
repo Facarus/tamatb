@@ -8,3 +8,30 @@ auto_detect:
   enabled: true
   method: path_match
 project_id: 2e4f5722-cfd3-4c79-b317-94e7d1713b17
+calibration_weights:
+  noetic:
+    know: 1.0
+    context: 0.8
+    signal: 0.9
+    uncertainty: 1.0
+    do: 0.3
+    change: 0.2
+    state: 0.3
+    completion: 0.5
+    impact: 0.3
+    clarity: 0.7
+    coherence: 0.6
+    density: 0.4
+  praxic:
+    know: 1.0
+    completion: 1.0
+    context: 1.0
+    impact: 0.9
+    uncertainty: 0.8
+    change: 0.9
+    do: 0.7
+    clarity: 0.7
+    coherence: 0.7
+    signal: 0.4
+    density: 0.4
+    state: 0.7
