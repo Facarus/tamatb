@@ -8,6 +8,7 @@ export interface Props {
 
 const { locale = 'en' } = Astro.props
 const t = useTranslations(locale)
+const base = import.meta.env.BASE_URL || "/"
 ---
 
 <Layout title={t.contact.title} locale={locale} description="Get in touch with TAM ATB Architecture">
@@ -76,7 +77,7 @@ const t = useTranslations(locale)
         <!-- Contact Info & Map -->
         <div>
           <div class="mb-8">
-            <img src="/images/contact/hero.jpg" alt="TAM ATB Office" class="w-full aspect-video object-cover mb-8" />
+            <img src={`${base}images/contact/hero.jpg`} alt="TAM ATB Office" class="w-full aspect-video object-cover mb-8" />
           </div>
 
           <div class="space-y-6 mb-8">

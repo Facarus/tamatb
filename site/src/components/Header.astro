@@ -25,6 +25,7 @@ const languages = [
 
 // Get current path without locale prefix for language switching
 const currentPath = Astro.url.pathname.replace(/^\/(en|es|zh)/, '') || '/'
+const base = import.meta.env.BASE_URL || "/"
 ---
 
 <header class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100">
@@ -33,7 +34,7 @@ const currentPath = Astro.url.pathname.replace(/^\/(en|es|zh)/, '') || '/'
       <!-- Logo & Slogan -->
       <a href={getLocalizedPath('/', locale)} class="flex items-center gap-4">
         <!-- Logo -->
-        <img src="/images/logo/logo.png" alt="TAM ATB Logo" class="w-12 h-12 object-contain" />
+        <img src={`${base}images/logo/logo.png`} alt="TAM ATB Logo" class="w-12 h-12 object-contain" />
         <div class="hidden sm:block">
           <h1 class="text-lg font-medium tracking-wide text-gray-900">TAM ATB</h1>
           <p class="text-xs text-gray-500 tracking-widest uppercase">Architecture</p>

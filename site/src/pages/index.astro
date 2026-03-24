@@ -7,8 +7,9 @@ import Vignette from '../components/kinetic/Vignette.astro'
 import { projects, gridColumns, columnSpeeds, columnDirections, projectOrder, buildClientProjectDB } from '../data/projects'
 
 const locale = 'en'
+const base = import.meta.env.BASE_URL || '/'
 const clientData = JSON.stringify({
-  projectDB: buildClientProjectDB(),
+  projectDB: buildClientProjectDB(base),
   projectOrder,
 })
 ---

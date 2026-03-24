@@ -16,6 +16,7 @@ export function getStaticPaths() {
 const { project } = Astro.props
 // For Chinese, fall back to English for now
 const description = project.description.en
+const base = import.meta.env.BASE_URL || "/"
 ---
 
 <Layout title={project.title} locale={locale} description={description.slice(0, 160)}>
@@ -29,7 +30,7 @@ const description = project.description.en
       </a>
 
       <div class="aspect-video bg-gray-200 mb-8 overflow-hidden">
-        <img src={project.image} alt={project.title} class="w-full h-full object-cover" />
+        <img src={`${base}${project.image}`} alt={project.title} class="w-full h-full object-cover" />
       </div>
 
       <h1 class="text-4xl font-light tracking-wide text-gray-900 mb-2">{project.title}</h1>
