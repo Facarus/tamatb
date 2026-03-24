@@ -7,7 +7,7 @@ interface Props {
 }
 
 const { project, direction } = Astro.props
-const base = import.meta.env.BASE_URL || '/'
+const base = (import.meta.env.BASE_URL || "/").replace(/\/*$/, "/")
 ---
 
 <div class="tile" data-project={project.id}>

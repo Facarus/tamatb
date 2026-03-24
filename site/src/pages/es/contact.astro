@@ -4,7 +4,7 @@ import { useTranslations } from '../../i18n/utils'
 
 const locale = 'es'
 const t = useTranslations(locale)
-const base = import.meta.env.BASE_URL || "/"
+const base = (import.meta.env.BASE_URL || "/").replace(/\/*$/, "/")
 ---
 
 <Layout title={t.contact.title} locale={locale}>
