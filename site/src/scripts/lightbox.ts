@@ -1,10 +1,5 @@
-/**
- * Lightbox — Architectural Unfold
- * Handles: open/close, 3D transforms, page-turn navigation,
- * image cycling, info overlay, keyboard controls.
- */
-
 import { setLightboxOpen, setAnimationPaused } from './kinetic-engine'
+import { isPageOverlayOpen } from './page-overlays'
 
 interface ProjectData {
   title: string
@@ -35,6 +30,7 @@ let lbInfoMeta: HTMLElement
 let lbInfoText: HTMLElement
 let lbInfoBtn: HTMLElement
 let lbCounter: HTMLElement
+let lbProjLabel: HTMLElement
 let kineticGrid: HTMLElement
 let navOverlay: HTMLElement
 let vignetteEl: HTMLElement
@@ -52,6 +48,7 @@ function openLightbox(projectId: string, imgIndex = 0) {
 
   lbImage.src = proj.images[imgIndex]
   updateCounter()
+  lbProjLabel.textContent = proj.title
 
   lbInfoTitle.textContent = proj.title
   lbInfoMeta.innerHTML = proj.state + ' &middot; ' + proj.location + '<br>' + proj.typology + ' &middot; ' + proj.date
@@ -65,7 +62,7 @@ function openLightbox(projectId: string, imgIndex = 0) {
   lbBackdrop.classList.add('active')
   lbStage.classList.add('active')
 
-  lbPanel.classList.remove('open', 'closing')
+  lbPanel.classList.remove('open', 'closing', 'fade-out', 'fade-in')
   void lbPanel.offsetWidth
   requestAnimationFrame(() => {
     lbPanel.classList.add('open')
@@ -93,9 +90,18 @@ function showImage(index: number) {
   if (!currentProjectId) return
   const proj = PROJECT_DB[currentProjectId]
   if (!proj) return
-  currentImageIndex = ((index % proj.images.length) + proj.images.length) % proj.images.length
-  lbImage.src = proj.images[currentImageIndex]
-  updateCounter()
+  const nextIndex = ((index % proj.images.length) + proj.images.length) % proj.images.length
+  if (nextIndex === currentImageIndex) return
+
+  lbPanel.classList.add('fade-out')
+  setTimeout(() => {
+    currentImageIndex = nextIndex
+    lbImage.src = proj.images[currentImageIndex]
+    updateCounter()
+    lbPanel.classList.remove('fade-out')
+    lbPanel.classList.add('fade-in')
+    setTimeout(() => lbPanel.classList.remove('fade-in'), 350)
+  }, 250)
 }
 
 function switchProject(direction: number) {
@@ -103,14 +109,9 @@ function switchProject(direction: number) {
   const idx = PROJECT_ORDER.indexOf(currentProjectId)
   const next = ((idx + direction) % PROJECT_ORDER.length + PROJECT_ORDER.length) % PROJECT_ORDER.length
 
-  const closeClass = direction > 0 ? 'close-left' : 'close-right'
-  const openClass = direction > 0 ? 'open-from-right' : 'open-from-left'
-
-  lbPanel.classList.remove('open', 'open-from-right', 'open-from-left')
-  lbPanel.classList.add(closeClass)
+  lbPanel.classList.add('fade-out')
 
   setTimeout(() => {
-    lbPanel.classList.remove(closeClass, 'closing')
     const proj = PROJECT_DB[PROJECT_ORDER[next]]
     if (!proj) return
 
@@ -118,35 +119,21 @@ function switchProject(direction: number) {
     currentImageIndex = 0
     lbImage.src = proj.images[0]
     updateCounter()
+    lbProjLabel.textContent = proj.title
     lbInfoTitle.textContent = proj.title
     lbInfoMeta.innerHTML = proj.state + ' &middot; ' + proj.location + '<br>' + proj.typology + ' &middot; ' + proj.date
     lbInfoText.innerHTML = proj.text
+
     if (infoVisible) {
       infoVisible = false
       lbInfoOverlay.classList.remove('visible')
       lbInfoBtn.classList.remove('active')
     }
 
-    if (direction > 0) {
-      lbPanel.style.transformOrigin = 'right center'
-      lbPanel.style.transform = 'rotateY(60deg) scale(0.95)'
-    } else {
-      lbPanel.style.transformOrigin = 'left center'
-      lbPanel.style.transform = 'rotateY(-60deg) scale(0.95)'
-    }
-    lbPanel.style.opacity = '0'
-
-    void lbPanel.offsetWidth
-    lbPanel.style.transform = ''
-    lbPanel.style.opacity = ''
-    lbPanel.style.transformOrigin = ''
-    lbPanel.classList.add(openClass)
-
-    setTimeout(() => {
-      lbPanel.classList.remove(openClass)
-      lbPanel.classList.add('open')
-    }, 500)
-  }, 380)
+    lbPanel.classList.remove('fade-out')
+    lbPanel.classList.add('fade-in')
+    setTimeout(() => lbPanel.classList.remove('fade-in'), 350)
+  }, 300)
 }
 
 function updateCounter() {
@@ -187,6 +174,7 @@ export function initLightbox(projectDB: ProjectDB, projectOrder: string[]) {
   lbInfoText = document.getElementById('lbInfoText')!
   lbInfoBtn = document.getElementById('lbInfoBtn')!
   lbCounter = document.getElementById('lbCounter')!
+  lbProjLabel = document.getElementById('lbProjLabel')!
   kineticGrid = document.getElementById('kineticGrid')!
   navOverlay = document.getElementById('navOverlay')!
   vignetteEl = document.getElementById('vignette')!
@@ -204,14 +192,11 @@ export function initLightbox(projectDB: ProjectDB, projectOrder: string[]) {
   lbPrevProj.addEventListener('click', (e) => { e.stopPropagation(); switchProject(-1) })
   lbNextProj.addEventListener('click', (e) => { e.stopPropagation(); switchProject(1) })
 
-  // Click image to advance
   lbImage.addEventListener('click', (e) => { e.stopPropagation(); showImage(currentImageIndex + 1) })
   lbImage.style.cursor = 'pointer'
 
-  // Click backdrop to close
   lbBackdrop.addEventListener('click', closeLightbox)
 
-  // Keyboard
   document.addEventListener('keydown', (e) => {
     if (!lightboxOpen) return
     if (e.key === 'Escape') closeLightbox()
@@ -222,9 +207,8 @@ export function initLightbox(projectDB: ProjectDB, projectOrder: string[]) {
     if (e.key === 'i' || e.key === 'I') toggleInfo()
   })
 
-  // Tile click opens lightbox
   document.addEventListener('click', (e) => {
-    if (lightboxOpen) return
+    if (lightboxOpen || isPageOverlayOpen()) return
     const tile = findTileFromEvent(e)
     if (tile) {
       e.preventDefault()
@@ -232,9 +216,9 @@ export function initLightbox(projectDB: ProjectDB, projectOrder: string[]) {
     }
   })
 
-  // Right-click also opens lightbox
   document.addEventListener('contextmenu', (e) => {
     if (lightboxOpen) { e.preventDefault(); return }
+    if (isPageOverlayOpen()) return
     const tile = findTileFromEvent(e)
     if (tile) {
       e.preventDefault()

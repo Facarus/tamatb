@@ -20,9 +20,9 @@ function getProject(id: string): Project | undefined {
   {columns.map((colIds, i) => (
     <div class={`column col-${directions[i]}`} data-col-index={i}>
       <div class="column-inner" data-direction={directions[i]} data-speed={speeds[i]}>
-        {colIds.map(id => {
+        {colIds.map((id, j) => {
           const project = getProject(id)
-          return project ? <KineticTile project={project} direction={directions[i]} /> : null
+          return project ? <KineticTile project={project} direction={directions[i]} tileIndex={i * 10 + j} /> : null
         })}
       </div>
     </div>

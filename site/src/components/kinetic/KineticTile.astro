@@ -4,14 +4,30 @@ import type { Project } from '../../data/projects'
 interface Props {
   project: Project
   direction: 'up' | 'down'
+  tileIndex?: number
 }
 
-const { project, direction } = Astro.props
+const { project, direction, tileIndex = 0 } = Astro.props
 const base = (import.meta.env.BASE_URL || "/").replace(/\/*$/, "/")
+
+function hashCode(s: string): number {
+  let h = 0
+  for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0
+  return Math.abs(h)
+}
+const h = hashCode(project.id)
+const g1 = 25 + (h % 30)
+const g2 = 45 + ((h >> 8) % 35)
+const angle = 120 + (h % 80)
 ---
 
-<div class="tile" data-project={project.id}>
-  <img loading="lazy" src={`${base}${project.gridImage}`} alt={project.title} />
+<div
+  class="tile"
+  data-project={project.id}
+  data-tile-index={tileIndex}
+  style={`--grad-from: ${g1}; --grad-to: ${g2}; --grad-angle: ${angle}deg;`}
+>
+  <img src={`${base}${project.gridImage}`} alt={project.title} />
   <div class="tile-overlay"></div>
   <div class="tile-info">
     <div class="tile-info-bg"></div>

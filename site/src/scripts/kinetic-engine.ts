@@ -118,6 +118,14 @@ export function initKineticGrid() {
       inner.innerHTML = original + original
     })
 
+    // Stagger reveal tiles with gradient-to-image fade
+    const allTiles = document.querySelectorAll('.tile') as NodeListOf<HTMLElement>
+    allTiles.forEach((tile) => {
+      const idx = parseInt(tile.dataset.tileIndex || '0', 10)
+      const delay = 80 + idx * 120 + Math.random() * 200
+      setTimeout(() => tile.classList.add('revealed'), delay)
+    })
+
     const columns = document.querySelectorAll('.column-inner')
     const state: {
       el: HTMLElement

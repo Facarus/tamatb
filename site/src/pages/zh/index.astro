@@ -3,13 +3,14 @@ import KineticLayout from '../../layouts/KineticLayout.astro'
 import KineticGrid from '../../components/kinetic/KineticGrid.astro'
 import KineticNav from '../../components/kinetic/KineticNav.astro'
 import KineticLightbox from '../../components/kinetic/KineticLightbox.astro'
+import KineticPages from '../../components/kinetic/KineticPages.astro'
 import Vignette from '../../components/kinetic/Vignette.astro'
 import { projects, gridColumns, columnSpeeds, columnDirections, projectOrder, buildClientProjectDB } from '../../data/projects'
 
 const locale = 'zh'
 const base = (import.meta.env.BASE_URL || "/").replace(/\/*$/, "/")
 const clientData = JSON.stringify({
-  projectDB: buildClientProjectDB(base),
+  projectDB: buildClientProjectDB(base, locale),
   projectOrder,
 })
 ---
@@ -24,18 +25,21 @@ const clientData = JSON.stringify({
     directions={columnDirections}
   />
   <KineticLightbox />
+  <KineticPages locale={locale} />
 
   <script type="application/json" id="project-data" set:html={clientData} />
 
   <script>
     import { initKineticGrid } from '../../scripts/kinetic-engine'
     import { initLightbox } from '../../scripts/lightbox'
+    import { initPageOverlays } from '../../scripts/page-overlays'
 
     const dataEl = document.getElementById('project-data')
     if (dataEl) {
       const { projectDB, projectOrder } = JSON.parse(dataEl.textContent || '{}')
       initKineticGrid()
       initLightbox(projectDB, projectOrder)
+      initPageOverlays()
     }
   </script>
 </KineticLayout>
