@@ -19,6 +19,7 @@ let lightboxOpen = false
 let currentProjectId: string | null = null
 let currentImageIndex = 0
 let infoVisible = false
+let infoPinned = false // true when user mousedown-pins info on image 1
 
 let lbBackdrop: HTMLElement
 let lbStage: HTMLElement
@@ -31,9 +32,34 @@ let lbInfoText: HTMLElement
 let lbInfoBtn: HTMLElement
 let lbCounter: HTMLElement
 let lbProjLabel: HTMLElement
+let lbSpinner: HTMLElement
 let kineticGrid: HTMLElement
 let navOverlay: HTMLElement
 let vignetteEl: HTMLElement
+
+/** Show or hide the info overlay */
+function setInfo(visible: boolean) {
+  infoVisible = visible
+  lbInfoOverlay.classList.toggle('visible', visible)
+  lbInfoBtn.classList.toggle('active', visible)
+}
+
+/** Preload an image and return a promise */
+function preloadImage(src: string): Promise<void> {
+  return new Promise((resolve) => {
+    if (lbImage.src === new URL(src, location.href).href && lbImage.complete) {
+      resolve()
+      return
+    }
+    const img = new Image()
+    img.onload = () => resolve()
+    img.onerror = () => resolve() // resolve anyway to avoid hanging
+    img.src = src
+  })
+}
+
+function showSpinner() { lbSpinner.classList.add('visible') }
+function hideSpinner() { lbSpinner.classList.remove('visible') }
 
 function openLightbox(projectId: string, imgIndex = 0) {
   const proj = PROJECT_DB[projectId]
@@ -43,8 +69,13 @@ function openLightbox(projectId: string, imgIndex = 0) {
   currentImageIndex = imgIndex
   lightboxOpen = true
   infoVisible = false
+  infoPinned = false
   setLightboxOpen(true)
   setAnimationPaused(true)
+
+  // Show spinner while first image loads
+  showSpinner()
+  lbImage.style.opacity = '0'
 
   lbImage.src = proj.images[imgIndex]
   updateCounter()
@@ -53,8 +84,6 @@ function openLightbox(projectId: string, imgIndex = 0) {
   lbInfoTitle.textContent = proj.title
   lbInfoMeta.innerHTML = proj.state + ' &middot; ' + proj.location + '<br>' + proj.typology + ' &middot; ' + proj.date
   lbInfoText.innerHTML = proj.text
-  lbInfoOverlay.classList.remove('visible')
-  lbInfoBtn.classList.remove('active')
 
   kineticGrid.classList.add('dimmed')
   navOverlay.classList.add('hidden')
@@ -64,8 +93,20 @@ function openLightbox(projectId: string, imgIndex = 0) {
 
   lbPanel.classList.remove('open', 'closing', 'fade-out', 'fade-in')
   void lbPanel.offsetWidth
-  requestAnimationFrame(() => {
-    lbPanel.classList.add('open')
+
+  // Wait for image to load, then reveal
+  preloadImage(proj.images[imgIndex]).then(() => {
+    hideSpinner()
+    lbImage.style.opacity = ''
+    requestAnimationFrame(() => {
+      lbPanel.classList.add('open')
+      // Auto-show info on first image (index 0)
+      if (imgIndex === 0) {
+        setInfo(true)
+      } else {
+        setInfo(false)
+      }
+    })
   })
 }
 
@@ -73,8 +114,11 @@ function closeLightbox() {
   lbPanel.classList.remove('open')
   lbPanel.classList.add('closing')
   lightboxOpen = false
+  infoPinned = false
   setLightboxOpen(false)
   setAnimationPaused(false)
+  hideSpinner()
+  setInfo(false)
 
   setTimeout(() => {
     lbBackdrop.classList.remove('active')
@@ -93,15 +137,30 @@ function showImage(index: number) {
   const nextIndex = ((index % proj.images.length) + proj.images.length) % proj.images.length
   if (nextIndex === currentImageIndex) return
 
+  // Fade out current
   lbPanel.classList.add('fade-out')
-  setTimeout(() => {
+  showSpinner()
+
+  // Preload next image
+  preloadImage(proj.images[nextIndex]).then(() => {
     currentImageIndex = nextIndex
     lbImage.src = proj.images[currentImageIndex]
     updateCounter()
+    hideSpinner()
     lbPanel.classList.remove('fade-out')
     lbPanel.classList.add('fade-in')
     setTimeout(() => lbPanel.classList.remove('fade-in'), 350)
-  }, 250)
+
+    // Hide info when navigating away from image 1, unless pinned on image 1
+    if (nextIndex === 0) {
+      // Returning to first image: show info
+      setInfo(true)
+    } else {
+      // On any other image: hide info, reset pin
+      infoPinned = false
+      setInfo(false)
+    }
+  })
 }
 
 function switchProject(direction: number) {
@@ -110,11 +169,13 @@ function switchProject(direction: number) {
   const next = ((idx + direction) % PROJECT_ORDER.length + PROJECT_ORDER.length) % PROJECT_ORDER.length
 
   lbPanel.classList.add('fade-out')
+  showSpinner()
 
-  setTimeout(() => {
-    const proj = PROJECT_DB[PROJECT_ORDER[next]]
-    if (!proj) return
+  const proj = PROJECT_DB[PROJECT_ORDER[next]]
+  if (!proj) return
 
+  // Preload first image of next project
+  preloadImage(proj.images[0]).then(() => {
     currentProjectId = PROJECT_ORDER[next]
     currentImageIndex = 0
     lbImage.src = proj.images[0]
@@ -124,16 +185,15 @@ function switchProject(direction: number) {
     lbInfoMeta.innerHTML = proj.state + ' &middot; ' + proj.location + '<br>' + proj.typology + ' &middot; ' + proj.date
     lbInfoText.innerHTML = proj.text
 
-    if (infoVisible) {
-      infoVisible = false
-      lbInfoOverlay.classList.remove('visible')
-      lbInfoBtn.classList.remove('active')
-    }
-
+    hideSpinner()
+    infoPinned = false
     lbPanel.classList.remove('fade-out')
     lbPanel.classList.add('fade-in')
     setTimeout(() => lbPanel.classList.remove('fade-in'), 350)
-  }, 300)
+
+    // Auto-show info on first image of new project
+    setInfo(true)
+  })
 }
 
 function updateCounter() {
@@ -144,9 +204,14 @@ function updateCounter() {
 }
 
 function toggleInfo() {
-  infoVisible = !infoVisible
-  lbInfoOverlay.classList.toggle('visible', infoVisible)
-  lbInfoBtn.classList.toggle('active', infoVisible)
+  if (infoVisible) {
+    setInfo(false)
+    infoPinned = false
+  } else {
+    setInfo(true)
+    // Pin if on first image and user explicitly toggles
+    if (currentImageIndex === 0) infoPinned = true
+  }
 }
 
 function findTileFromEvent(e: Event): HTMLElement | null {
@@ -175,6 +240,7 @@ export function initLightbox(projectDB: ProjectDB, projectOrder: string[]) {
   lbInfoBtn = document.getElementById('lbInfoBtn')!
   lbCounter = document.getElementById('lbCounter')!
   lbProjLabel = document.getElementById('lbProjLabel')!
+  lbSpinner = document.getElementById('lbSpinner')!
   kineticGrid = document.getElementById('kineticGrid')!
   navOverlay = document.getElementById('navOverlay')!
   vignetteEl = document.getElementById('vignette')!
@@ -186,7 +252,32 @@ export function initLightbox(projectDB: ProjectDB, projectOrder: string[]) {
   const lbNextProj = document.getElementById('lbNextProj')!
 
   lbClose.addEventListener('click', (e) => { e.stopPropagation(); closeLightbox() })
+
+  // Info button: hover shows temporarily, mousedown on image 1 pins it
   lbInfoBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleInfo() })
+
+  lbInfoBtn.addEventListener('mouseenter', () => {
+    if (!infoVisible && lightboxOpen) {
+      setInfo(true)
+    }
+  })
+
+  lbInfoBtn.addEventListener('mouseleave', () => {
+    // Only auto-hide if not pinned and not on first image (where info is auto-shown)
+    if (!infoPinned && currentImageIndex !== 0 && lightboxOpen) {
+      setInfo(false)
+    }
+  })
+
+  lbInfoBtn.addEventListener('mousedown', (e) => {
+    e.stopPropagation()
+    if (currentImageIndex === 0) {
+      // Pin info on first image
+      infoPinned = true
+      setInfo(true)
+    }
+  })
+
   lbPrevImg.addEventListener('click', (e) => { e.stopPropagation(); showImage(currentImageIndex - 1) })
   lbNextImg.addEventListener('click', (e) => { e.stopPropagation(); showImage(currentImageIndex + 1) })
   lbPrevProj.addEventListener('click', (e) => { e.stopPropagation(); switchProject(-1) })

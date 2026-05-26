@@ -225,15 +225,13 @@
 }
 .nav-menu a:hover { opacity: 1; transform: translateX(6px); letter-spacing: 4px; }
 
-/* ===== VIGNETTE ===== */
+/* ===== VIGNETTE (disabled — kept for JS toggling) ===== */
 .vignette {
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 100;
-  background:
-    linear-gradient(to right, rgba(0,0,0,0.55) 0%, transparent 22%, transparent 78%, rgba(0,0,0,0.25) 100%),
-    linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, transparent 18%, transparent 82%, rgba(0,0,0,0.25) 100%);
+  background: none;
   transition: opacity 0.4s ease;
 }
 .vignette.hidden { opacity: 0; }
@@ -296,6 +294,50 @@
   display: block;
   border-radius: 2px;
   box-shadow: 0 30px 90px rgba(0,0,0,0.6), 0 0 1px rgba(255,255,255,0.1);
+}
+
+/* ===== LIGHTBOX SPINNER ===== */
+.lb-spinner {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 64px;
+  height: 64px;
+  z-index: 512;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.lb-spinner.visible { opacity: 1; }
+
+.lb-spinner-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.lb-spinner-rect {
+  fill: rgba(255,255,255,0);
+  stroke: rgba(255,255,255,0.15);
+  stroke-width: 2;
+  stroke-dasharray: 360;
+  stroke-dashoffset: 0;
+}
+
+/* LED-chase: a bright segment races around the square outline */
+.lb-spinner.visible .lb-spinner-rect {
+  animation: spinner-chase 1.6s linear infinite, spinner-glow 1.6s ease-in-out infinite;
+}
+
+@keyframes spinner-chase {
+  0% { stroke-dasharray: 40 320; stroke-dashoffset: 0; }
+  50% { stroke-dasharray: 80 280; stroke-dashoffset: -160; }
+  100% { stroke-dasharray: 40 320; stroke-dashoffset: -360; }
+}
+
+@keyframes spinner-glow {
+  0%, 100% { stroke: rgba(255,255,255,0.25); }
+  50% { stroke: rgba(255,255,255,0.7); }
 }
 
 /* ===== LIGHTBOX CONTROLS — fixed position relative to viewport ===== */
