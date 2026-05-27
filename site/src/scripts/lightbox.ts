@@ -1,5 +1,6 @@
 import { setLightboxOpen, setAnimationPaused } from './kinetic-engine'
 import { isPageOverlayOpen } from './page-overlays'
+import { getImageTier, tieredImagePath } from '../data/projects'
 
 interface ProjectData {
   title: string
@@ -20,6 +21,13 @@ let currentProjectId: string | null = null
 let currentImageIndex = 0
 let infoVisible = false
 let infoPinned = false // true when user mousedown-pins info on image 1
+
+let currentTier: 'sm' | 'md' | 'lg' = 'lg'
+
+/** Resolve a project image path to its optimized tier version */
+function resolveImg(src: string): string {
+  return tieredImagePath(src, currentTier)
+}
 
 let lbBackdrop: HTMLElement
 let lbStage: HTMLElement
@@ -77,7 +85,7 @@ function openLightbox(projectId: string, imgIndex = 0) {
   showSpinner()
   lbImage.style.opacity = '0'
 
-  lbImage.src = proj.images[imgIndex]
+  lbImage.src = resolveImg(proj.images[imgIndex])
   updateCounter()
   lbProjLabel.textContent = proj.title
 
@@ -95,7 +103,7 @@ function openLightbox(projectId: string, imgIndex = 0) {
   void lbPanel.offsetWidth
 
   // Wait for image to load, then reveal
-  preloadImage(proj.images[imgIndex]).then(() => {
+  preloadImage(resolveImg(proj.images[imgIndex])).then(() => {
     hideSpinner()
     lbImage.style.opacity = ''
     requestAnimationFrame(() => {
@@ -142,9 +150,9 @@ function showImage(index: number) {
   showSpinner()
 
   // Preload next image
-  preloadImage(proj.images[nextIndex]).then(() => {
+  preloadImage(resolveImg(proj.images[nextIndex])).then(() => {
     currentImageIndex = nextIndex
-    lbImage.src = proj.images[currentImageIndex]
+    lbImage.src = resolveImg(proj.images[currentImageIndex])
     updateCounter()
     hideSpinner()
     lbPanel.classList.remove('fade-out')
@@ -175,10 +183,10 @@ function switchProject(direction: number) {
   if (!proj) return
 
   // Preload first image of next project
-  preloadImage(proj.images[0]).then(() => {
+  preloadImage(resolveImg(proj.images[0])).then(() => {
     currentProjectId = PROJECT_ORDER[next]
     currentImageIndex = 0
-    lbImage.src = proj.images[0]
+    lbImage.src = resolveImg(proj.images[0])
     updateCounter()
     lbProjLabel.textContent = proj.title
     lbInfoTitle.textContent = proj.title
@@ -228,6 +236,7 @@ function findTileFromEvent(e: Event): HTMLElement | null {
 export function initLightbox(projectDB: ProjectDB, projectOrder: string[]) {
   PROJECT_DB = projectDB
   PROJECT_ORDER = projectOrder
+  currentTier = getImageTier()
 
   lbBackdrop = document.getElementById('lbBackdrop')!
   lbStage = document.getElementById('lbStage')!

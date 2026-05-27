@@ -516,3 +516,37 @@ export function buildClientProjectDB(base = '/', locale: 'en' | 'es' | 'zh' = 'e
   }
   return db
 }
+
+/**
+ * Returns the image-quality tier based on viewport width.
+ * Used client-side to pick optimized images.
+ */
+export function getImageTier(): 'sm' | 'md' | 'lg' {
+  if (typeof window === 'undefined') return 'lg'
+  const w = window.innerWidth
+  if (w <= 640) return 'sm'
+  if (w <= 1024) return 'md'
+  return 'lg'
+}
+
+/**
+ * Rewrites a base image path to include the tier subfolder.
+ * e.g. "/tamatb/images/projects/k-s-villa/1.jpg"
+ *   -> "/tamatb/images/projects/k-s-villa/lg/1.jpg"
+ *
+ * Also handles main-upscaled paths:
+ * e.g. "/tamatb/images/main-upscaled/k-s-villa.jpg"
+ *   -> "/tamatb/images/main-upscaled/lg/k-s-villa.jpg"
+ */
+export function tieredImagePath(src: string, tier: 'sm' | 'md' | 'lg'): string {
+  // Match: .../projects/{id}/{n}.jpg → .../projects/{id}/{tier}/{n}.jpg
+  const projMatch = src.match(/^(.*\/projects\/[^/]+)\/([^/]+)$/)
+  if (projMatch) return `${projMatch[1]}/${tier}/${projMatch[2]}`
+
+  // Match: .../main-upscaled/{name}.jpg → .../main-upscaled/{tier}/{name}.jpg
+  const mainMatch = src.match(/^(.*\/main-upscaled)\/([^/]+)$/)
+  if (mainMatch) return `${mainMatch[1]}/${tier}/${mainMatch[2]}`
+
+  // Fallback: return original (for one-off images like hero etc)
+  return src
+}

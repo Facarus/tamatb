@@ -10,6 +10,14 @@ interface Props {
 const { project, direction, tileIndex = 0 } = Astro.props
 const base = (import.meta.env.BASE_URL || "/").replace(/\/*$/, "/")
 
+// Build responsive image paths for grid thumbnails
+const gridImg = project.gridImage // e.g. "images/main-upscaled/k-s-villa.jpg"
+const gridDir = gridImg.replace(/\/([^/]+)$/, '') // "images/main-upscaled"
+const gridFile = gridImg.replace(/.*\//, '')       // "k-s-villa.jpg"
+const smSrc = `${base}${gridDir}/sm/${gridFile}`
+const mdSrc = `${base}${gridDir}/md/${gridFile}`
+const lgSrc = `${base}${gridDir}/lg/${gridFile}`
+
 function hashCode(s: string): number {
   let h = 0
   for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0
@@ -27,7 +35,12 @@ const angle = 120 + (h % 80)
   data-tile-index={tileIndex}
   style={`--grad-from: ${g1}; --grad-to: ${g2}; --grad-angle: ${angle}deg;`}
 >
-  <img src={`${base}${project.gridImage}`} alt={project.title} />
+  <img
+    src={lgSrc}
+    srcset={`${smSrc} 400w, ${mdSrc} 600w, ${lgSrc} 800w`}
+    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+    alt={project.title}
+  />
   <div class="tile-overlay"></div>
   <div class="tile-info">
     <div class="tile-info-bg"></div>
