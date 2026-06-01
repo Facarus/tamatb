@@ -1,6 +1,7 @@
 /**
  * Page Overlays — fade-in panels over the kinetic grid
- * Handles: Studio, Present, Videos, Contact pages as overlays
+ * Handles: Studio, Videos, Contact pages as overlays
+ * Also manages hamburger menu pin/unpin behavior
  */
 
 import { setAnimationPaused } from './kinetic-engine'
@@ -12,7 +13,6 @@ let vignetteEl: HTMLElement
 
 const pageMap: Record<string, string> = {
   studio: 'pageStudio',
-  present: 'pagePresent',
   videos: 'pageVideos',
   contact: 'pageContact',
 }
@@ -21,7 +21,6 @@ function openPage(pageId: string) {
   const overlay = document.getElementById(pageMap[pageId])
   if (!overlay) return
 
-  // Close any currently open overlay
   if (activeOverlay) {
     activeOverlay.classList.remove('active')
   }
@@ -59,7 +58,6 @@ function closePage() {
     setAnimationPaused(false)
     activeOverlay = null
 
-    // Remove active nav link
     document.querySelectorAll('.nav-menu a').forEach(a => a.classList.remove('nav-active'))
   }, 450)
 }
@@ -69,6 +67,17 @@ export function initPageOverlays() {
   kineticGrid = document.getElementById('kineticGrid')!
   vignetteEl = document.getElementById('vignette')!
 
+  const navTrigger = document.getElementById('navTrigger')
+  const navHamburger = document.getElementById('navHamburger')
+
+  // Hamburger click: toggle pinned state
+  if (navHamburger && navTrigger) {
+    navHamburger.addEventListener('click', (e) => {
+      e.stopPropagation()
+      navTrigger.classList.toggle('open')
+    })
+  }
+
   // Nav link click handlers
   document.querySelectorAll('.nav-menu a[data-page]').forEach(link => {
     link.addEventListener('click', (e) => {
@@ -76,20 +85,26 @@ export function initPageOverlays() {
       const pageId = (link as HTMLElement).dataset.page
       if (!pageId) return
 
-      if (activeOverlay && activeOverlay.id === pageMap[pageId]) {
-        closePage()
-      } else {
-        openPage(pageId)
+      // Close hamburger menu when a page is selected
+      if (navTrigger) navTrigger.classList.remove('open')
+
+      if (pageMap[pageId]) {
+        if (activeOverlay && activeOverlay.id === pageMap[pageId]) {
+          closePage()
+        } else {
+          openPage(pageId)
+        }
       }
     })
   })
 
-  // "Built" link returns to grid
-  const builtLink = document.querySelector('.nav-menu a[data-page="built"]')
-  if (builtLink) {
-    builtLink.addEventListener('click', (e) => {
+  // Logo click returns to grid (closes overlay)
+  const logoLink = document.querySelector('.logo[data-page="built"]')
+  if (logoLink) {
+    logoLink.addEventListener('click', (e) => {
       e.preventDefault()
       if (activeOverlay) closePage()
+      if (navTrigger) navTrigger.classList.remove('open')
     })
   }
 
@@ -104,10 +119,14 @@ export function initPageOverlays() {
   // Click backdrop to close
   pageBackdrop.addEventListener('click', closePage)
 
-  // Keyboard: Escape closes
+  // Keyboard: Escape closes overlay or menu
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && activeOverlay) {
-      closePage()
+    if (e.key === 'Escape') {
+      if (activeOverlay) {
+        closePage()
+      } else if (navTrigger && navTrigger.classList.contains('open')) {
+        navTrigger.classList.remove('open')
+      }
     }
   })
 }

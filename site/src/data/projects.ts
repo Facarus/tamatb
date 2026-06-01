@@ -259,7 +259,7 @@ export const projects: Project[] = [
     featured: true,
     image: 'images/main-upscaled/mr-z-house.jpg',
     gridImage: 'images/main-upscaled/mr-z-house.jpg',
-    images: imgRange('mr-z-house', 8),
+    images: imgRange('mr-z-house', 11),
     text: {
       es: '<p>La casa Zeid responde a las necesidades de un amplio programa familiar compuesto por un núcleo paterno que disfruta de la planta alta y la zona central en la planta baja y una extensión para los más jóvenes de la familia, situados en los dúplex adosados a ambos lados. Ambos comparten las zonas comunes de la casa: el salón de la planta baja, el spa, el gimnasio, la piscina y los jardines. La vivienda, en forma de arco alrededor del jardín y la vista al mar Mediterráneo, permite a todas las zonas de vida acceso directo al paseo del jardín.</p>',
       en: '<p>The house answers to a large family program composed of a paternal nucleus that enjoys the upper floor and the central area in the ground floor. Two younger family branches live in attached duplexes at both sides, sharing common areas of the house with their parents, such as a social area in the ground floor, spa, gym, swimming pool and gardens. The Mansion, shaped as an arch that embraces the garden and the Mediterranean sea view, allows all the living areas direct access to the garden promenade.</p>'
@@ -297,7 +297,7 @@ export const projects: Project[] = [
     year: '1997',
     image: 'images/main-upscaled/n-h-villa.jpg',
     gridImage: 'images/main-upscaled/n-h-villa.jpg',
-    images: imgRange('n-h-villa', 2),
+    images: imgRange('n-h-villa', 10),
     text: {
       es: '<p>Esta casa explora la posibilidad de adaptar el azulejo típico árabe, material cuya excelencia de aislamiento térmico se demuestra, a raíces inclinadas hacia una nueva composición arquitectónica que combina eficiencia y fluidez del espacio.</p>',
       en: '<p>This house explores the possibility of adapting the typical Arabic tile, material whose thermal insulation excellence is proved, to sloping roots towards a new architectural composition that combines efficiency and the fluency of space.</p>'
@@ -317,7 +317,7 @@ export const projects: Project[] = [
     featured: true,
     image: 'images/main-upscaled/oriental-landscape-hq.jpg',
     gridImage: 'images/main-upscaled/oriental-landscape-hq.jpg',
-    images: imgRange('oriental-landscape-hq', 8),
+    images: imgRange('oriental-landscape-hq', 10),
     text: {
       es: '<p>Uno de los proyectos más importantes realizados por ATB Orient, en colaboración con el arquitecto Facundo Taborda Gauna y OUDG, fue la comisión de diseño de la sede corporativa de OL, la mayor empresa de paisajismo de China. La empresa requirió que su sede, ubicada en el prestigioso Distrito Artístico 798 de Pekín, mantuviese la elegancia de su imagen corporativa y a su vez reflejara su negocio de paisajismo.</p>',
       en: '<p>One of the most important projects realized by ATB Orient, in association with the architect Facundo Taborda Gauna and OUDG, was the commission to design the corporate headquarters of OL, China\'s largest landscaping company. The company required that their headquarters, located in Beijing\'s prestigious 798 Art District, maintain the elegance of their corporate image while reflecting their landscaping business.</p>'
@@ -394,19 +394,14 @@ export const projects: Project[] = [
     year: '2012',
     image: 'images/main-upscaled/shanghai-arch.jpg',
     gridImage: 'images/main-upscaled/shanghai-arch.jpg',
-    images: [
-      'images/projects/shanghai-arch/1.jpg',
-      'images/projects/shanghai-arch/2.jpg',
-      'images/projects/shanghai-arch/3.jpg',
-      'images/projects/shanghai-arch/4.jpg'
-    ],
+    images: imgRange('shanghai-arch', 11),
     text: {
-      es: '<p>El Arco de Shanghái propone una puerta monumental que marca la entrada a una nueva zona de desarrollo urbano. El diseño aprovecha el poder simbólico del arco como umbral, reinterpretado a escala urbana mediante ingeniería contemporánea, con plataformas de observación y espacios de exhibición integrados.</p>',
-      en: '<p>The Shanghai Arch proposes a monumental gateway marking the entrance to a new urban development zone. The design draws on the symbolic power of the arch as a threshold, reinterpreted at an urban scale through contemporary engineering, with integrated observation platforms and exhibition spaces.</p>'
+      es: '<p><strong>Propuesta 1 (imágenes 1–5):</strong> El Arco de Shanghái propone una puerta monumental que marca la entrada a una nueva zona de desarrollo urbano. El diseño aprovecha el poder simbólico del arco como umbral, reinterpretado a escala urbana mediante ingeniería contemporánea, con plataformas de observación y espacios de exhibición integrados.</p><p><strong>Propuesta 2 (imágenes 6–11):</strong> Una segunda interpretación del arco adopta un enfoque más orgánico, donde la estructura se disuelve en una serie de nervaduras que filtran la luz y generan un paisaje interior cambiante. La geometría variable permite múltiples lecturas del umbral según el ángulo de aproximación.</p>',
+      en: '<p><strong>Proposal 1 (images 1–5):</strong> The Shanghai Arch proposes a monumental gateway marking the entrance to a new urban development zone. The design draws on the symbolic power of the arch as a threshold, reinterpreted at an urban scale through contemporary engineering, with integrated observation platforms and exhibition spaces.</p><p><strong>Proposal 2 (images 6–11):</strong> A second interpretation of the arch takes a more organic approach, where the structure dissolves into a series of ribs that filter light and generate an ever-changing interior landscape. The variable geometry allows multiple readings of the threshold depending on the angle of approach.</p>'
     },
     description: {
-      es: 'El Arco de Shanghái propone una puerta monumental que marca la entrada a una nueva zona de desarrollo urbano.',
-      en: 'The Shanghai Arch proposes a monumental gateway marking the entrance to a new urban development zone.'
+      es: 'El Arco de Shanghái propone una puerta monumental que marca la entrada a una nueva zona de desarrollo urbano. Dos propuestas: una geométrica y otra orgánica.',
+      en: 'The Shanghai Arch proposes a monumental gateway marking the entrance to a new urban development zone. Two proposals: one geometric, one organic.'
     }
   },
   {
@@ -418,7 +413,7 @@ export const projects: Project[] = [
     year: '2009',
     image: 'images/main-upscaled/t-q-plaza.jpg',
     gridImage: 'images/main-upscaled/t-q-plaza.jpg',
-    images: imgRange('t-q-plaza', 8),
+    images: imgRange('t-q-plaza', 9),
     text: {
       es: '<p>Con vistas al mar y situada en la confluencia de las dos avenidas principales de la ciudad de Budva, la fachada del edificio está diseñada como tres bloques en forma de u, con el objetivo de aumentar al máximo la fachada de las unidades de viviendas y oficinas con la mejor orientación.</p>',
       en: '<p>Standing in the seafront, in the confluence of the two main avenues of Budva, the façade is modeled into three blocks in the form of bows, which emphasize the naval character of the building, thus identifying it with the neighboring marina.</p>'
@@ -437,7 +432,7 @@ export const projects: Project[] = [
     year: '2012',
     image: 'images/main-upscaled/tony-jacklin-golf-club.jpg',
     gridImage: 'images/main-upscaled/tony-jacklin-golf-club.jpg',
-    images: imgRange('tony-jacklin-golf-club', 8),
+    images: imgRange('tony-jacklin-golf-club', 11),
     text: {
       es: '<p>En 2012, ATB Architecture, Ángel Taborda y la firma de su socio Daniela Ritcher, ganaron el concurso de diseño para la creación de una club de golf cerca del aeropuerto internacional de Casablanca en Marruecos. La parcela, situada en el antiguo terreno del ejército cerca del bosque de Bouskoura, está dominada por ondulaciones.</p>',
       en: '<p>In 2012, ATB Architecture won the design competition for the creation of a golf clubhouse near Casablanca International Airport in Morocco. The site, situated in the former army terrain near the forest of Bouskoura, is dominated by undulating fairways.</p>'
@@ -456,7 +451,7 @@ export const projects: Project[] = [
     year: '2005',
     image: 'images/main-upscaled/urb-sierra-blanca.jpg',
     gridImage: 'images/main-upscaled/urb-sierra-blanca.jpg',
-    images: imgRange('urb-sierra-blanca', 8),
+    images: imgRange('urb-sierra-blanca', 10),
     text: {
       es: '<p>El reto principal de este proyecto fue construir sobre una parcela boscosa con árboles milenarios en todo el terreno. Para el proyecto, se realizó un estudio topográfico riguroso en el que se definieron las áreas donde se podía construir respetando el entorno y los árboles de todo el territorio, estas áreas definieron la forma final de las viviendas.</p>',
       en: '<p>The major challenge of this project was to build on a forested plot, whose dense mass colonized the entire ground. A rigorous topographical study defined the areas to be built. The remaining patches of free space defined the final form of the buildings.</p>'
