@@ -119,10 +119,48 @@ export function initPageOverlays() {
   // Click backdrop to close
   pageBackdrop.addEventListener('click', closePage)
 
-  // Keyboard: Escape closes overlay or menu
+  // ===== Inline Video Player =====
+  const videoOverlay = document.getElementById('videoPlayerOverlay')
+  const videoFrame = document.getElementById('videoPlayerFrame') as HTMLIFrameElement | null
+  const videoClose = document.getElementById('videoPlayerClose')
+
+  function openVideo(youtubeId: string) {
+    if (!videoOverlay || !videoFrame) return
+    // Embed with minimal UI: no related videos, modest branding, autoplay
+    videoFrame.src = `https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=1&rel=0&modestbranding=1&showinfo=0&color=white&iv_load_policy=3`
+    videoOverlay.classList.add('active')
+  }
+
+  function closeVideo() {
+    if (!videoOverlay || !videoFrame) return
+    videoOverlay.classList.remove('active')
+    // Stop video by clearing src
+    setTimeout(() => { videoFrame.src = '' }, 350)
+  }
+
+  // Video circle click handlers
+  document.querySelectorAll('.video-circle[data-youtube]').forEach(circle => {
+    circle.addEventListener('click', () => {
+      const ytId = (circle as HTMLElement).dataset.youtube
+      if (ytId) {
+        openVideo(ytId)
+      }
+    })
+  })
+
+  if (videoClose) videoClose.addEventListener('click', closeVideo)
+  if (videoOverlay) {
+    videoOverlay.addEventListener('click', (e) => {
+      if (e.target === videoOverlay) closeVideo()
+    })
+  }
+
+  // Keyboard: Escape closes video player, overlay, or menu
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-      if (activeOverlay) {
+      if (videoOverlay?.classList.contains('active')) {
+        closeVideo()
+      } else if (activeOverlay) {
         closePage()
       } else if (navTrigger && navTrigger.classList.contains('open')) {
         navTrigger.classList.remove('open')

@@ -51,64 +51,72 @@ const telephoneLabel = locale === 'es' ? 'Teléfono' : locale === 'zh' ? '电话
   <button class="page-close" id="pageCloseVideos" title="Close (Esc)">&times;</button>
   <div class="page-content">
     <div class="video-grid-wrap">
-      <div class="video-grid">
-        <a class="video-circle" href="#" target="_blank" rel="noopener" data-title="Elements — Tribute to ATB">
+      <div class="video-grid" id="videoGrid">
+        <div class="video-circle" data-youtube="">
           <img src={`${base}images/videos/elements-tribute.jpg`} alt="Elements — Tribute to ATB" />
           <span class="video-circle-title">Elements</span>
-        </a>
-        <a class="video-circle" href="https://youtu.be/KQJ3Vlppr8s" target="_blank" rel="noopener" data-title="Estadio Plaza de Marbella">
+        </div>
+        <div class="video-circle" data-youtube="KQJ3Vlppr8s">
           <img src={`${base}images/videos/estadio-plaza.jpg`} alt="Estadio Plaza de Marbella" />
           <span class="video-circle-title">Estadio Plaza</span>
-        </a>
-        <a class="video-circle" href="#" target="_blank" rel="noopener" data-title="House in La Quinta">
+        </div>
+        <div class="video-circle" data-youtube="">
           <img src={`${base}images/videos/house-la-quinta.jpg`} alt="House in La Quinta" />
           <span class="video-circle-title">La Quinta</span>
-        </a>
-        <a class="video-circle" href="https://youtu.be/_60H61Y39GA" target="_blank" rel="noopener" data-title="House in Monte Mayor">
+        </div>
+        <div class="video-circle" data-youtube="_60H61Y39GA">
           <img src={`${base}images/videos/house-monte-mayor.jpg`} alt="House in Monte Mayor" />
           <span class="video-circle-title">Monte Mayor</span>
-        </a>
-        <a class="video-circle" href="#" target="_blank" rel="noopener" data-title="Villa Aloha">
+        </div>
+        <div class="video-circle" data-youtube="">
           <img src={`${base}images/videos/villa-aloha.jpg`} alt="Villa Aloha" />
           <span class="video-circle-title">Villa Aloha</span>
-        </a>
-        <a class="video-circle" href="https://youtu.be/NREIthXZypM" target="_blank" rel="noopener" data-title="Villa Elviria">
+        </div>
+        <div class="video-circle" data-youtube="NREIthXZypM">
           <img src={`${base}images/videos/villa-elviria.jpg`} alt="Villa Elviria" />
           <span class="video-circle-title">Villa Elviria</span>
-        </a>
-        <a class="video-circle" href="https://youtu.be/XyDlUNfhS7E" target="_blank" rel="noopener" data-title="ASB — Riyadh">
+        </div>
+        <div class="video-circle" data-youtube="XyDlUNfhS7E">
           <img src={`${base}images/videos/asb-riyadh.jpg`} alt="ASB — Riyadh" />
           <span class="video-circle-title">ASB Riyadh</span>
-        </a>
-        <a class="video-circle" href="#" target="_blank" rel="noopener" data-title="Ocean Villa">
+        </div>
+        <div class="video-circle" data-youtube="">
           <img src={`${base}images/videos/ocean-villa.jpg`} alt="Ocean Villa" />
           <span class="video-circle-title">Ocean Villa</span>
-        </a>
-        <a class="video-circle" href="https://youtu.be/BhdIKkgsZWg" target="_blank" rel="noopener" data-title="Istan Hotel">
+        </div>
+        <div class="video-circle" data-youtube="BhdIKkgsZWg">
           <img src={`${base}images/videos/istan-hotel.jpg`} alt="Istan Hotel" />
           <span class="video-circle-title">Istan Hotel</span>
-        </a>
-        <a class="video-circle" href="https://youtu.be/qqNt4hFyIfM" target="_blank" rel="noopener" data-title="TQ Tower">
+        </div>
+        <div class="video-circle" data-youtube="qqNt4hFyIfM">
           <img src={`${base}images/videos/tq-tower.jpg`} alt="TQ Tower" />
           <span class="video-circle-title">TQ Tower</span>
-        </a>
-        <a class="video-circle" href="#" target="_blank" rel="noopener" data-title="Sierra Blanca">
+        </div>
+        <div class="video-circle" data-youtube="">
           <img src={`${base}images/videos/sierra-blanca.jpg`} alt="Sierra Blanca" />
           <span class="video-circle-title">Sierra Blanca</span>
-        </a>
-        <a class="video-circle" href="https://youtu.be/L23TjhfOHc4" target="_blank" rel="noopener" data-title="Hotel Peral">
+        </div>
+        <div class="video-circle" data-youtube="L23TjhfOHc4">
           <img src={`${base}images/videos/hotel-peral.jpg`} alt="Hotel Peral" />
           <span class="video-circle-title">Hotel Peral</span>
-        </a>
-        <a class="video-circle" href="https://youtu.be/_lSGARbVMGA" target="_blank" rel="noopener" data-title="Villa ATB">
+        </div>
+        <div class="video-circle" data-youtube="_lSGARbVMGA">
           <img src={`${base}images/videos/villa-atb.jpg`} alt="Villa ATB" />
           <span class="video-circle-title">Villa ATB</span>
-        </a>
-        <a class="video-circle" href="https://youtu.be/7Cl9MmndYs8" target="_blank" rel="noopener" data-title="Desert Club">
+        </div>
+        <div class="video-circle" data-youtube="7Cl9MmndYs8">
           <img src={`${base}images/videos/desert-club.jpg`} alt="Desert Club" />
           <span class="video-circle-title">Desert Club</span>
-        </a>
+        </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Inline video player -->
+  <div class="video-player-overlay" id="videoPlayerOverlay">
+    <div class="video-player-wrap">
+      <button class="video-player-close" id="videoPlayerClose">&times;</button>
+      <iframe id="videoPlayerFrame" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
     </div>
   </div>
 </div>
@@ -146,7 +154,7 @@ const telephoneLabel = locale === 'es' ? 'Teléfono' : locale === 'zh' ? '电话
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3223.5!2d-4.9575!3d36.4935!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd72f79a7c16a5e7%3A0x3c4c18e78c6b7a4d!2sAvda.%20del%20Prado%2C%20Marbella!5e0!3m2!1sen!2ses!4v1700000000000!5m2!1sen!2ses"
             width="100%"
             height="100%"
-            style="border:0;"
+            style="border:0; filter: invert(90%) hue-rotate(180deg) brightness(0.9) contrast(1.1);"
             allowfullscreen=""
             loading="lazy"
             referrerpolicy="no-referrer-when-downgrade"
