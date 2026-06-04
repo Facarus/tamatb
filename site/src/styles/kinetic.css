@@ -572,6 +572,67 @@
   100% { background: rgba(0,0,0,0.4); }
 }
 
+/* ===== VIDEO GRID ===== */
+.video-grid-wrap {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px 0;
+}
+.video-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 24px 20px;
+  justify-items: center;
+}
+.video-circle {
+  position: relative;
+  width: 100%;
+  max-width: 120px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  overflow: hidden;
+  display: block;
+  text-decoration: none;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.35s ease;
+}
+.video-circle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(100%) brightness(0.7);
+  transition: filter 0.4s ease, transform 0.4s ease;
+}
+.video-circle:hover {
+  transform: scale(1.1);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+}
+.video-circle:hover img {
+  filter: grayscale(0%) brightness(1);
+  transform: scale(1.08);
+}
+.video-circle-title {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 8px;
+  font-weight: 400;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: white;
+  background: linear-gradient(transparent, rgba(0,0,0,0.7));
+  padding: 12px 4px 6px;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.video-circle:hover .video-circle-title {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 /* ===== UNDER CONSTRUCTION NOTICE ===== */
 .lb-wip-notice {
   position: absolute;
@@ -882,6 +943,9 @@
   .lb-info-overlay { width: 30%; }
   .lb-info-title { font-size: 16px; }
   .lb-info-text { font-size: 10px; }
+  .video-grid { grid-template-columns: repeat(4, 1fr); gap: 20px 16px; }
+  .video-circle { max-width: 110px; }
+  .video-circle-title { font-size: 7px; opacity: 1; transform: translateY(0); }
   .page-two-squares { grid-template-columns: 1fr; }
   .page-square { aspect-ratio: auto; }
   .page-square-image { aspect-ratio: 4/3; }
@@ -910,6 +974,9 @@
   .lb-info-title { font-size: 14px; letter-spacing: 2px; }
   .lb-info-meta { font-size: 8px; }
   .lb-info-text { font-size: 9px; }
+  .video-grid { grid-template-columns: repeat(3, 1fr); gap: 16px 12px; }
+  .video-circle { max-width: 90px; }
+  .video-circle-title { font-size: 6px; letter-spacing: 0.8px; opacity: 1; transform: translateY(0); }
   .lb-close, .lb-info-toggle { width: 34px; height: 34px; }
   .lb-img-nav .lb-btn, .lb-proj-nav .lb-btn { width: 38px; height: 32px; font-size: 14px; }
   .lb-counter { font-size: 9px; }
