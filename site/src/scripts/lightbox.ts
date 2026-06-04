@@ -40,9 +40,11 @@ let lbInfoBtn: HTMLElement
 let lbCounter: HTMLElement
 let lbProjLabel: HTMLElement
 let lbSpinner: HTMLElement
+let lbWipNotice: HTMLElement
 let kineticGrid: HTMLElement
 let navOverlay: HTMLElement
 let vignetteEl: HTMLElement
+let wipTimer: number | null = null
 
 /* ── Info overlay: left-quarter with timed auto-show ── */
 
@@ -107,6 +109,19 @@ function preloadImage(src: string): Promise<void> {
 function showSpinner() { lbSpinner.classList.add('visible') }
 function hideSpinner() { lbSpinner.classList.remove('visible') }
 
+function showWipNotice() {
+  if (wipTimer !== null) clearTimeout(wipTimer)
+  lbWipNotice.classList.add('visible')
+  wipTimer = window.setTimeout(() => {
+    lbWipNotice.classList.remove('visible')
+    wipTimer = null
+  }, 2500)
+}
+function hideWipNotice() {
+  if (wipTimer !== null) { clearTimeout(wipTimer); wipTimer = null }
+  lbWipNotice.classList.remove('visible')
+}
+
 function openLightbox(projectId: string, imgIndex = 0) {
   const proj = PROJECT_DB[projectId]
   if (!proj) return
@@ -162,6 +177,7 @@ function closeLightbox() {
   setAnimationPaused(false)
   hideSpinner()
   hideInfo()
+  hideWipNotice()
 
   setTimeout(() => {
     lbBackdrop.classList.remove('active')
@@ -177,6 +193,13 @@ function showImage(index: number) {
   if (!currentProjectId) return
   const proj = PROJECT_DB[currentProjectId]
   if (!proj) return
+
+  // Single-image project: show "under construction" notice
+  if (proj.images.length <= 1) {
+    showWipNotice()
+    return
+  }
+
   const nextIndex = ((index % proj.images.length) + proj.images.length) % proj.images.length
   if (nextIndex === currentImageIndex) return
 
@@ -281,6 +304,7 @@ export function initLightbox(projectDB: ProjectDB, projectOrder: string[]) {
   lbCounter = document.getElementById('lbCounter')!
   lbProjLabel = document.getElementById('lbProjLabel')!
   lbSpinner = document.getElementById('lbSpinner')!
+  lbWipNotice = document.getElementById('lbWipNotice')!
   kineticGrid = document.getElementById('kineticGrid')!
   navOverlay = document.getElementById('navOverlay')!
   vignetteEl = document.getElementById('vignette')!

@@ -76,7 +76,8 @@
               opacity 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-.tile.revealed:hover img {
+.tile.revealed:hover img,
+.tile.revealed.touch-active img {
   filter: grayscale(0%) contrast(1) brightness(1);
   transform: scale(1.04);
 }
@@ -133,7 +134,8 @@
 .col-up .tile-info-bg { bottom: -60px; }
 .col-down .tile-info-bg { top: -60px; }
 
-.tile:hover .tile-info-bg { opacity: 1; }
+.tile:hover .tile-info-bg,
+.tile.touch-active .tile-info-bg { opacity: 1; }
 
 .tile .label {
   font-size: 10px;
@@ -150,7 +152,8 @@
   text-overflow: ellipsis;
 }
 
-.tile:hover .label { opacity: 1; }
+.tile:hover .label,
+.tile.touch-active .label { opacity: 1; }
 
 .tile .meta {
   position: absolute;
@@ -165,7 +168,8 @@
 .col-up .tile .meta { top: 100%; margin-top: 2px; }
 .col-down .tile .meta { bottom: 100%; margin-bottom: 2px; }
 
-.tile:hover .meta { opacity: 1; }
+.tile:hover .meta,
+.tile.touch-active .meta { opacity: 1; }
 
 .meta-line {
   font-size: 8px;
@@ -568,6 +572,42 @@
   100% { background: rgba(0,0,0,0.4); }
 }
 
+/* ===== UNDER CONSTRUCTION NOTICE ===== */
+.lb-wip-notice {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  border-radius: 2px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+  z-index: 516;
+}
+.lb-wip-notice.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+.lb-wip-inner {
+  text-align: center;
+}
+.lb-wip-icon {
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+.lb-wip-text {
+  display: block;
+  font-size: 14px;
+  font-weight: 300;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.6);
+}
+
 /* ===== PAGE OVERLAYS ===== */
 .page-backdrop {
   position: fixed;
@@ -830,6 +870,7 @@
   .kinetic-grid { gap: 4px; }
   .column-inner { gap: 4px; }
   .column:nth-child(4) { display: none; }
+  .tile { min-height: 120px; }
   .nav-overlay { padding: 24px 28px; }
   .logo img { height: 92px; }
   .logo { margin-bottom: 18px; }
@@ -853,6 +894,7 @@
   .column-inner { gap: 3px; }
   .column:nth-child(3) { display: none; }
   .column:nth-child(4) { display: none; }
+  .tile { min-height: 80px; }
   .nav-overlay { padding: 16px 20px; }
   .logo img { height: 69px; }
   .logo { margin-bottom: 12px; }
